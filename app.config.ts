@@ -58,6 +58,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         color: '#6200EE',
       },
     ],
+    [
+      'react-native-maps',
+      {
+        androidGoogleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,

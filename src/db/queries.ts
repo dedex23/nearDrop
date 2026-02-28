@@ -1,5 +1,5 @@
 import { eq, like, desc, or } from 'drizzle-orm';
-import { v4 as uuid } from 'uuid';
+import { randomUUID } from 'expo-crypto';
 import { db } from './client';
 import { places } from './schema';
 import type { Place, PlaceInsert, Category, SourceType } from '@/types';
@@ -42,7 +42,7 @@ export async function searchPlaces(query: string): Promise<Place[]> {
 
 export async function insertPlace(data: PlaceInsert): Promise<Place> {
   const now = new Date();
-  const id = data.id || uuid();
+  const id = data.id || randomUUID();
   const row = {
     ...data,
     id,

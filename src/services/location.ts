@@ -60,11 +60,13 @@ export async function startBackgroundLocation(): Promise<boolean> {
 }
 
 export async function stopBackgroundLocation(): Promise<void> {
-  const isStarted = await Location.hasStartedLocationUpdatesAsync(BACKGROUND_LOCATION_TASK).catch(
-    () => false
-  );
-  if (isStarted) {
-    await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
+  try {
+    const isStarted = await Location.hasStartedLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
+    if (isStarted) {
+      await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
+    }
+  } catch {
+    // Task not registered yet, nothing to stop
   }
 }
 

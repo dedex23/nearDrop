@@ -31,7 +31,7 @@ export async function setupNotifications(): Promise<boolean> {
     importance: Notifications.AndroidImportance.HIGH,
     vibrationPattern: [0, 250, 250, 250],
     lightColor: '#6200EE',
-    sound: 'default',
+    sound: null,
   });
 
   return true;

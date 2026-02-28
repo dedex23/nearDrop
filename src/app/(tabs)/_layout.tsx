@@ -10,6 +10,7 @@ export default function TabsLayout() {
         tabBarActiveTintColor: '#6200EE',
       }}
     >
+      <Tabs.Screen name="index" options={{ href: null }} />
       <Tabs.Screen
         name="map"
         options={{

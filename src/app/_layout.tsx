@@ -24,9 +24,12 @@ export default function RootLayout() {
     if (!isReady) return;
 
     (async () => {
-      await setupNotifications();
-      await loadPlaces();
-      SplashScreen.hideAsync();
+      try {
+        await setupNotifications();
+        await loadPlaces();
+      } finally {
+        SplashScreen.hideAsync();
+      }
     })();
   }, [isReady, loadPlaces]);
 
