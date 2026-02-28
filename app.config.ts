@@ -64,6 +64,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         androidGoogleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
       },
     ],
+    [
+      'expo-share-intent',
+      {
+        androidIntentFilters: ['text/*'],
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,

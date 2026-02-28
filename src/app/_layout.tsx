@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { Slot, SplashScreen, useRouter } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';
 import * as Notifications from 'expo-notifications';
+import { ShareIntentProvider, useShareIntentContext } from 'expo-share-intent';
 import { useDatabase } from '@/hooks/use-database';
 import { useAppStore } from '@/stores/app-store';
 import { useSettingsStore } from '@/stores/settings-store';
@@ -13,11 +14,12 @@ import { theme } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function RootLayoutInner() {
   const { isReady, error } = useDatabase();
   const loadPlaces = useAppStore((s) => s.loadPlaces);
   const isTrackingEnabled = useSettingsStore((s) => s.isTrackingEnabled);
   const router = useRouter();
+  const { hasShareIntent } = useShareIntentContext();
 
   // Initialize app when database is ready
   useEffect(() => {
@@ -55,15 +57,28 @@ export default function RootLayout() {
     return () => subscription.remove();
   }, [router]);
 
+  // Handle share intent → navigate to share screen
+  useEffect(() => {
+    if (hasShareIntent) {
+      router.replace('/share-intent' as never);
+    }
+  }, [hasShareIntent, router]);
+
   if (error) {
     console.error('[NearDrop] Database migration error:', error);
   }
 
   if (!isReady) return null;
 
+  return <Slot />;
+}
+
+export default function RootLayout() {
   return (
-    <PaperProvider theme={theme}>
-      <Slot />
-    </PaperProvider>
+    <ShareIntentProvider>
+      <PaperProvider theme={theme}>
+        <RootLayoutInner />
+      </PaperProvider>
+    </ShareIntentProvider>
   );
 }

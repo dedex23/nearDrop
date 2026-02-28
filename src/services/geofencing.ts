@@ -2,20 +2,27 @@ import { getActivePlaces, markNotified } from '@/db/queries';
 import { haversineDistance } from '@/utils/distance';
 import { ROUGH_FILTER_DEGREES } from '@/utils/constants';
 import { sendProximityNotification, sendGroupedNotification } from './notifications';
+import { useSettingsStore } from '@/stores/settings-store';
 import type { Place } from '@/types';
-
-// Default cooldown: 24 hours (can be overridden by settings)
-const DEFAULT_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Main geofencing check. Called on every background location update.
- * 1. Load active places
- * 2. Pre-filter by bounding box (fast)
- * 3. Calculate exact Haversine distance for candidates
- * 4. Trigger notifications for places within radius (with cooldown)
+ * 1. Check quiet mode & active hours
+ * 2. Load active places
+ * 3. Pre-filter by bounding box (fast)
+ * 4. Calculate exact Haversine distance for candidates
+ * 5. Trigger notifications for places within radius (with cooldown)
  */
 export async function checkGeofences(currentLat: number, currentLon: number): Promise<void> {
   try {
+    const settings = useSettingsStore.getState();
+
+    // Skip if quiet mode is on
+    if (settings.isQuietMode) return;
+
+    // Skip if outside active hours
+    if (!isWithinActiveHours(settings.activeHoursStart, settings.activeHoursEnd)) return;
+
     const allPlaces = await getActivePlaces();
 
     // Fast bounding-box pre-filter (~5.5km)
@@ -25,13 +32,14 @@ export async function checkGeofences(currentLat: number, currentLon: number): Pr
         Math.abs(p.longitude - currentLon) < ROUGH_FILTER_DEGREES
     );
 
+    const cooldownMs = settings.cooldownHours * 60 * 60 * 1000;
     const placesToNotify: Array<{ place: Place; distance: number }> = [];
 
     for (const place of candidates) {
       const distance = haversineDistance(currentLat, currentLon, place.latitude, place.longitude);
 
       if (distance <= place.radius) {
-        if (!isCooldownActive(place)) {
+        if (!isCooldownActive(place, cooldownMs)) {
           placesToNotify.push({ place, distance });
         }
       }
@@ -56,8 +64,18 @@ export async function checkGeofences(currentLat: number, currentLon: number): Pr
   }
 }
 
-function isCooldownActive(place: Place): boolean {
+function isCooldownActive(place: Place, cooldownMs: number): boolean {
   if (!place.notifiedAt) return false;
   const elapsed = Date.now() - place.notifiedAt.getTime();
-  return elapsed < DEFAULT_COOLDOWN_MS;
+  return elapsed < cooldownMs;
+}
+
+function isWithinActiveHours(start: number, end: number): boolean {
+  const now = new Date().getHours();
+  if (start <= end) {
+    // e.g. 10-22: active between 10:00 and 22:00
+    return now >= start && now < end;
+  }
+  // e.g. 22-06: active from 22:00 to 06:00 (night mode)
+  return now >= start || now < end;
 }

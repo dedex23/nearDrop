@@ -50,7 +50,7 @@ export async function sendProximityNotification(
       data: { placeId: place.id },
       sound: 'default',
     },
-    trigger: null, // Send immediately
+    trigger: { channelId: 'proximity' },
   });
 }
 
@@ -70,6 +70,6 @@ export async function sendGroupedNotification(places: Place[]): Promise<void> {
       data: { placeIds: places.map((p) => p.id) },
       sound: 'default',
     },
-    trigger: null,
+    trigger: { channelId: 'proximity' },
   });
 }
