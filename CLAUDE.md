@@ -82,8 +82,10 @@ Settings Store → AsyncStorage (user preferences)
 - Maestro installé via `curl -Ls "https://get.maestro.mobile.dev" | bash` (PAS `brew install maestro` qui installe le mauvais outil)
 - **Gotcha Maestro inputText** : Sur émulateur API 36, le touchscreen virtuel est enregistré comme `STYLUS` — chaque `tapOn` sur un champ texte déclenche le handwriting overlay Android, rendant `inputText` extrêmement lent (~2min/champ). Workaround : installer [ADB Keyboard](https://github.com/senzhk/ADBKeyBoard) (`adb install ADBKeyboard.apk` + `adb shell ime set com.android.adbkeyboard/.AdbIME`). Le script `./scripts/emu.sh test` le fait automatiquement.
 - **Gotcha Maestro scroll** : `scroll` ne prend pas `direction`, utiliser `swipe` avec `direction: UP/DOWN`
+- **Unit tests** : Jest + jest-expo — 83 tests couvrant `distance`, `address-parser`, `share-intent`, `geofencing`
+- Lancer : `npm test` / `npm run test:watch`
+- Convention : fichiers `.test.ts` colocalisés avec le source (ex: `src/utils/distance.test.ts`)
 - Analyse statique : `npx tsc --noEmit` (types) + `npm run lint` (ESLint)
-- No unit test framework configured yet
 
 ## Android Debug & Emulator
 

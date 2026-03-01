@@ -5,7 +5,6 @@ import { useRouter } from 'expo-router';
 import { useAppStore } from '@/stores/app-store';
 import { PlaceCard } from '@/components/place-card';
 import { CategoryChips } from '@/components/category-chip';
-import { haversineDistance } from '@/utils/distance';
 import type { Place } from '@/types';
 
 export default function PlacesScreen() {
@@ -20,7 +19,6 @@ export default function PlacesScreen() {
     setSortBy,
     isLoading,
     loadPlaces,
-    userLocation,
   } = useAppStore();
 
   const filteredAndSorted = useMemo(() => {
@@ -54,7 +52,7 @@ export default function PlacesScreen() {
           return b.createdAt.getTime() - a.createdAt.getTime();
       }
     });
-  }, [places, searchQuery, selectedCategory, sortBy, userLocation]);
+  }, [places, searchQuery, selectedCategory, sortBy]);
 
   const renderItem = useCallback(
     ({ item }: { item: Place }) => (

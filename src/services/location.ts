@@ -15,6 +15,7 @@ TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
     if (locations && locations.length > 0) {
       const latest = locations[locations.length - 1];
       // Use require to avoid circular dependency
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { checkGeofences } = require('./geofencing');
       await checkGeofences(latest.coords.latitude, latest.coords.longitude);
     }

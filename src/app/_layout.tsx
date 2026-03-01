@@ -1,5 +1,3 @@
-import '../services/location'; // Register background task at module scope
-
 import React, { useEffect } from 'react';
 import { Slot, SplashScreen, useRouter } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';
@@ -9,6 +7,11 @@ import { useDatabase } from '@/hooks/use-database';
 import { useAppStore } from '@/stores/app-store';
 import { useSettingsStore } from '@/stores/settings-store';
 import { setupNotifications } from '@/services/notifications';
+// Side-effect import registers background task at module scope;
+// named imports from the same module are merged by the bundler.
+// eslint-disable-next-line import/no-duplicates
+import '@/services/location';
+// eslint-disable-next-line import/no-duplicates
 import { startBackgroundLocation, stopBackgroundLocation } from '@/services/location';
 import { theme } from '@/theme';
 

@@ -1,6 +1,6 @@
 import { extractCoordsFromGoogleMapsUrl, extractAddressFromText } from '@/utils/address-parser';
 import { geocodeAddress } from './geocoding';
-import type { PlaceInsert, SourceType } from '@/types';
+import type { SourceType } from '@/types';
 
 interface ParsedShareData {
   name: string;

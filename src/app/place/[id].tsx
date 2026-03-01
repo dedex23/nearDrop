@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet, Alert, Linking } from 'react-native';
 import { Text, Button, Chip, Switch, Divider, IconButton } from 'react-native-paper';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
@@ -7,7 +7,7 @@ import { useAppStore } from '@/stores/app-store';
 import { PlaceForm } from '@/components/place-form';
 import { CATEGORY_CONFIG } from '@/utils/constants';
 import { haversineDistance, formatDistance } from '@/utils/distance';
-import type { Place, PlaceInsert } from '@/types';
+import type { PlaceInsert } from '@/types';
 
 export default function PlaceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

@@ -33,7 +33,7 @@ export async function checkGeofences(currentLat: number, currentLon: number): Pr
     );
 
     const cooldownMs = settings.cooldownHours * 60 * 60 * 1000;
-    const placesToNotify: Array<{ place: Place; distance: number }> = [];
+    const placesToNotify: { place: Place; distance: number }[] = [];
 
     for (const place of candidates) {
       const distance = haversineDistance(currentLat, currentLon, place.latitude, place.longitude);

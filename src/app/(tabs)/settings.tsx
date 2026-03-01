@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet, Alert } from 'react-native';
-import { List, Switch, Text, Divider, Button } from 'react-native-paper';
+import { List, Switch, Text, Divider } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
-import * as FileSystem from 'expo-constants';
 import { useSettingsStore } from '@/stores/settings-store';
 import { useAppStore } from '@/stores/app-store';
 import { startBackgroundLocation, stopBackgroundLocation } from '@/services/location';
@@ -49,7 +48,7 @@ export default function SettingsScreen() {
   const handleExport = async () => {
     try {
       const allPlaces = await queries.getAllPlaces();
-      const data = JSON.stringify(
+      JSON.stringify(
         {
           exportDate: new Date().toISOString(),
           version: '1.0',
@@ -60,7 +59,7 @@ export default function SettingsScreen() {
       );
       Alert.alert('Export Ready', `${allPlaces.length} places exported. Data copied to clipboard.`);
       // In a real implementation, use expo-sharing or expo-file-system to save the file
-    } catch (error) {
+    } catch {
       Alert.alert('Export Failed', 'An error occurred while exporting data.');
     }
   };

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Text, Button, List } from 'react-native-paper';
+import { Text, List } from 'react-native-paper';
 import { Stack } from 'expo-router';
 
 export default function ImportScreen() {
