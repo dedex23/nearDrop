@@ -9,6 +9,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   userInterfaceStyle: 'automatic',
+  ios: {
+    bundleIdentifier: 'com.neardrop.app',
+  },
   android: {
     package: 'com.neardrop.app',
     adaptiveIcon: {
