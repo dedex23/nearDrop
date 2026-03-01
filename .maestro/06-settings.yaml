@@ -1,0 +1,56 @@
+appId: com.neardrop.app
+---
+# Test Settings screen visibility and toggle interactions
+- launchApp
+- runFlow: flows/dismiss-permissions.yaml
+
+# Wait for app to fully load
+- assertVisible: "Map"
+
+# Navigate to Settings
+- tapOn: "Settings"
+
+# Verify settings sections are visible
+- assertVisible: "Background Tracking"
+- assertVisible: "Quiet Mode"
+- assertVisible: "Notification Settings"
+
+# Toggle Quiet Mode on
+- tapOn:
+    id: "switch-quiet-mode"
+
+# Scroll to see more settings
+- swipe:
+    direction: UP
+    duration: 500
+
+- assertVisible: "Active Hours"
+
+# Scroll further for data section
+- swipe:
+    direction: UP
+    duration: 500
+
+- assertVisible: "Export Data"
+- assertVisible: "Import Data"
+
+# Scroll to About
+- swipe:
+    direction: UP
+    duration: 500
+
+- assertVisible: "NearDrop"
+
+# Scroll back up and toggle Quiet Mode off
+- swipe:
+    direction: DOWN
+    duration: 500
+- swipe:
+    direction: DOWN
+    duration: 500
+- swipe:
+    direction: DOWN
+    duration: 500
+
+- tapOn:
+    id: "switch-quiet-mode"

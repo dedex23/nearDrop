@@ -1,0 +1,9 @@
+executionOrder:
+  continueOnFailure: true
+  flowsOrder:
+    - "01-app-launch"
+    - "02-navigation"
+    - "03-add-place"
+    - "04-place-crud"
+    - "05-search-filter"
+    - "06-settings"

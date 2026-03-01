@@ -26,7 +26,7 @@ export function PlaceCard({ place, onPress }: PlaceCardProps) {
       : null;
 
   return (
-    <Card style={[styles.card, !place.isActive && styles.inactive]} onPress={onPress}>
+    <Card testID="place-card" style={[styles.card, !place.isActive && styles.inactive]} onPress={onPress}>
       <Card.Content>
         <Text variant="titleMedium" numberOfLines={1}>
           {place.name}

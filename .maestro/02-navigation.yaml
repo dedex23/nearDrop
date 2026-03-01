@@ -1,0 +1,21 @@
+appId: com.neardrop.app
+---
+# Test navigation between all three tabs
+- launchApp
+- runFlow: flows/dismiss-permissions.yaml
+
+# Start on Map tab
+- assertVisible: "Map"
+
+# Navigate to Places tab
+- tapOn: "Places"
+- assertVisible: "Search places..."
+
+# Navigate to Settings tab
+- tapOn: "Settings"
+- assertVisible: "Background Tracking"
+
+# Navigate back to Map tab
+- tapOn: "Map"
+- assertVisible:
+    text: "places"

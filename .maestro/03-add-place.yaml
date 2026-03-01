@@ -1,0 +1,48 @@
+appId: com.neardrop.app
+---
+# Test adding a new place — fills all required fields and submits
+- launchApp
+- runFlow: flows/dismiss-permissions.yaml
+
+# Wait for app to fully load
+- assertVisible: "Map"
+
+# Navigate to Places tab
+- tapOn: "Places"
+
+# Tap FAB to open the Add Place form
+- tapOn:
+    id: "fab-add-place"
+
+# Verify form is visible
+- assertVisible: "Add Place"
+
+# Fill in Name
+- tapOn:
+    id: "input-name"
+- inputText: "Bistro"
+- hideKeyboard
+
+# Fill in Address
+- tapOn:
+    id: "input-address"
+- inputText: "10 Rivoli"
+- hideKeyboard
+
+# Select category Restaurant
+- tapOn: "Restaurant"
+
+# Submit the form
+- tapOn:
+    id: "btn-submit-place"
+
+# Wait for geocoding + navigation back (Nominatim can be slow)
+- extendedWaitUntil:
+    visible: "Places"
+    timeout: 15000
+
+# Navigate to Places tab to see the new place
+- tapOn: "Places"
+
+# Assert the place appears in the list
+- assertVisible: "Bistro"

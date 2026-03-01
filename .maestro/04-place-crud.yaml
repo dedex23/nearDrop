@@ -1,0 +1,99 @@
+appId: com.neardrop.app
+---
+# Full CRUD cycle: create, read, edit, delete a place
+- launchApp
+- runFlow: flows/dismiss-permissions.yaml
+
+# Wait for app to fully load
+- assertVisible: "Map"
+
+# === CREATE ===
+- tapOn: "Places"
+- tapOn:
+    id: "fab-add-place"
+
+# Fill form
+- tapOn:
+    id: "input-name"
+- inputText: "CrudCafe"
+- hideKeyboard
+
+- tapOn:
+    id: "input-address"
+- inputText: "1 Concorde"
+- hideKeyboard
+
+- tapOn: "Café"
+
+# Scroll down to reach Notes and Submit
+- swipe:
+    direction: UP
+    duration: 500
+
+- tapOn:
+    id: "input-notes"
+- inputText: "Espresso"
+- hideKeyboard
+
+- tapOn:
+    id: "btn-submit-place"
+
+# Wait for geocoding
+- extendedWaitUntil:
+    visible: "Places"
+    timeout: 15000
+
+# === READ ===
+- tapOn: "Places"
+- assertVisible: "CrudCafe"
+
+# Open the place detail
+- tapOn: "CrudCafe"
+
+# Verify detail page content
+- assertVisible: "CrudCafe"
+- assertVisible: "Café"
+- assertVisible: "Espresso"
+- assertVisible: "Source: manual"
+
+# === EDIT ===
+- tapOn:
+    id: "btn-edit-place"
+
+# Clear existing name and type new one
+- tapOn:
+    id: "input-name"
+- eraseText: 8
+- inputText: "CrudBar"
+- hideKeyboard
+
+# Change category to Bar
+- tapOn: "Bar"
+
+# Submit changes
+- swipe:
+    direction: UP
+    duration: 500
+- tapOn:
+    id: "btn-submit-place"
+
+# Wait for save
+- extendedWaitUntil:
+    visible: "CrudBar"
+    timeout: 15000
+
+# Verify updated name in detail view
+- assertVisible: "CrudBar"
+
+# === DELETE ===
+- swipe:
+    direction: UP
+    duration: 500
+- tapOn:
+    id: "btn-delete-place"
+
+# Confirm deletion in the Alert dialog
+- tapOn: "Delete"
+
+# Back on Places list — the place should be gone
+- assertNotVisible: "CrudBar"

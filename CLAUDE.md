@@ -77,4 +77,22 @@ Settings Store → AsyncStorage (user preferences)
 
 ## Testing
 
-- No test framework configured. No unit or integration tests exist yet.
+- **Maestro E2E** : 6 flows dans `.maestro/` (01-app-launch, 02-navigation, 03-add-place, 04-place-crud, 05-search-filter, 06-settings)
+- Lancer les tests : `export PATH="$PATH:$HOME/.maestro/bin" && maestro test .maestro/`
+- Maestro installé via `curl -Ls "https://get.maestro.mobile.dev" | bash` (PAS `brew install maestro` qui installe le mauvais outil)
+- **Gotcha Maestro inputText** : Sur émulateur API 36, le touchscreen virtuel est enregistré comme `STYLUS` — chaque `tapOn` sur un champ texte déclenche le handwriting overlay Android, rendant `inputText` extrêmement lent (~2min/champ). Workaround : installer [ADB Keyboard](https://github.com/senzhk/ADBKeyBoard) (`adb install ADBKeyboard.apk` + `adb shell ime set com.android.adbkeyboard/.AdbIME`). Le script `./scripts/emu.sh test` le fait automatiquement.
+- **Gotcha Maestro scroll** : `scroll` ne prend pas `direction`, utiliser `swipe` avec `direction: UP/DOWN`
+- Analyse statique : `npx tsc --noEmit` (types) + `npm run lint` (ESLint)
+- No unit test framework configured yet
+
+## Android Debug & Emulator
+
+- Script utilitaire : `./scripts/emu.sh` (start, stop, app, screenshot, logs, gps, ui, tap, test)
+- ADB path : `~/Library/Android/sdk/platform-tools/adb`
+- Émulateur AVD : `Medium_Phone_API_36.1` — démarrer avec `./scripts/emu.sh start`
+- App package : `com.neardrop.app`
+- Screenshot ADB : `adb shell screencap -p /sdcard/screen.png && adb pull /sdcard/screen.png /tmp/screen.png`
+- Logs JS : `adb logcat -s ReactNativeJS:V -d -t 50`
+- UI hierarchy : `adb shell uiautomator dump` → XML avec bounds pour cibler les taps
+- Mock GPS (émulateur) : `adb -s emulator-5554 emu geo fix <lon> <lat>`
+- **Gotcha** : le Pixel 9 physique se verrouille → screenshots noirs. Déverrouiller avec `adb shell input keyevent KEYCODE_WAKEUP && adb shell input swipe 540 1800 540 800 300`

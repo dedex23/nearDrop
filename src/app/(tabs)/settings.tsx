@@ -76,6 +76,7 @@ export default function SettingsScreen() {
           left={(props) => <List.Icon {...props} icon="crosshairs-gps" />}
           right={() => (
             <Switch
+              testID="switch-tracking"
               value={settings.isTrackingEnabled}
               onValueChange={handleTrackingToggle}
               color="#6200EE"
@@ -89,6 +90,7 @@ export default function SettingsScreen() {
           left={(props) => <List.Icon {...props} icon="bell-off" />}
           right={() => (
             <Switch
+              testID="switch-quiet-mode"
               value={settings.isQuietMode}
               onValueChange={(v) => settings.updateSettings({ isQuietMode: v })}
               color="#6200EE"

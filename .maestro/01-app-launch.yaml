@@ -1,0 +1,14 @@
+appId: com.neardrop.app
+---
+# Verify NearDrop launches without crash and displays the Map screen
+- launchApp
+- runFlow: flows/dismiss-permissions.yaml
+
+# Assert the Map tab is visible
+- assertVisible: "Map"
+- assertVisible:
+    text: "places"
+
+# Verify bottom tab bar is present
+- assertVisible: "Places"
+- assertVisible: "Settings"

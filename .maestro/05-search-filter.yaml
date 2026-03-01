@@ -1,0 +1,77 @@
+appId: com.neardrop.app
+---
+# Test search and category filtering
+- launchApp
+- runFlow: flows/dismiss-permissions.yaml
+
+# Wait for app to fully load
+- assertVisible: "Map"
+
+# === SETUP: Create two places with different categories ===
+
+- tapOn: "Places"
+
+# Create first place: Restaurant
+- tapOn:
+    id: "fab-add-place"
+- tapOn:
+    id: "input-name"
+- inputText: "FiltResto"
+- hideKeyboard
+- tapOn:
+    id: "input-address"
+- inputText: "5 Oberkampf"
+- hideKeyboard
+- tapOn: "Restaurant"
+- tapOn:
+    id: "btn-submit-place"
+- extendedWaitUntil:
+    visible: "Places"
+    timeout: 15000
+
+# Create second place: Bar
+- tapOn: "Places"
+- tapOn:
+    id: "fab-add-place"
+- tapOn:
+    id: "input-name"
+- inputText: "FiltBar"
+- hideKeyboard
+- tapOn:
+    id: "input-address"
+- inputText: "20 Oberkampf"
+- hideKeyboard
+- tapOn: "Bar"
+- tapOn:
+    id: "btn-submit-place"
+- extendedWaitUntil:
+    visible: "Places"
+    timeout: 15000
+
+# Go to Places list
+- tapOn: "Places"
+
+# Both places should be visible
+- assertVisible: "FiltResto"
+- assertVisible: "FiltBar"
+
+# === SEARCH ===
+- tapOn:
+    id: "searchbar"
+- inputText: "Resto"
+- assertVisible: "FiltResto"
+- assertNotVisible: "FiltBar"
+
+# Clear search
+- eraseText: 5
+
+# === CATEGORY FILTER ===
+- hideKeyboard
+- tapOn: "Bar"
+- assertVisible: "FiltBar"
+- assertNotVisible: "FiltResto"
+
+# Deselect filter to show all
+- tapOn: "Bar"
+- assertVisible: "FiltResto"
+- assertVisible: "FiltBar"

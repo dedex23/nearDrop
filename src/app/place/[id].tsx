@@ -115,7 +115,9 @@ export default function PlaceDetailScreen() {
       <Stack.Screen
         options={{
           title: place.name,
-          headerRight: () => <IconButton icon="pencil" onPress={() => setIsEditing(true)} />,
+          headerRight: () => (
+            <IconButton testID="btn-edit-place" icon="pencil" onPress={() => setIsEditing(true)} />
+          ),
         }}
       />
       <ScrollView style={styles.container}>
@@ -151,7 +153,12 @@ export default function PlaceDetailScreen() {
         <View style={styles.section}>
           <View style={styles.row}>
             <Text variant="bodyMedium">Active</Text>
-            <Switch value={place.isActive} onValueChange={handleToggleActive} color="#6200EE" />
+            <Switch
+              testID="switch-active"
+              value={place.isActive}
+              onValueChange={handleToggleActive}
+              color="#6200EE"
+            />
           </View>
         </View>
 
@@ -216,6 +223,7 @@ export default function PlaceDetailScreen() {
         </View>
 
         <Button
+          testID="btn-delete-place"
           mode="outlined"
           icon="delete"
           onPress={handleDelete}

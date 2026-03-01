@@ -1,0 +1,24 @@
+appId: com.neardrop.app
+---
+# Shared flow: dismiss Android permission dialogs
+- runFlow:
+    when:
+      visible: "While using the app"
+    commands:
+      - tapOn: "While using the app"
+
+- runFlow:
+    when:
+      visible: "Turn on"
+    commands:
+      - tapOn: "Turn on"
+
+- runFlow:
+    when:
+      visible:
+        text: "Allow"
+        index: 0
+    commands:
+      - tapOn:
+          text: "Allow"
+          index: 0

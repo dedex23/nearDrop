@@ -90,6 +90,7 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Save' }: Pla
   return (
     <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       <TextInput
+        testID="input-name"
         label="Name *"
         value={name}
         onChangeText={setName}
@@ -101,6 +102,7 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Save' }: Pla
 
       <View style={styles.addressRow}>
         <TextInput
+          testID="input-address"
           label="Address *"
           value={address}
           onChangeText={setAddress}
@@ -134,6 +136,7 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Save' }: Pla
       <CategoryPicker value={category} onChange={setCategory} />
 
       <TextInput
+        testID="input-tags"
         label="Tags (comma-separated)"
         value={tags}
         onChangeText={setTags}
@@ -143,6 +146,7 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Save' }: Pla
       />
 
       <TextInput
+        testID="input-notes"
         label="Notes"
         value={notes}
         onChangeText={setNotes}
@@ -168,6 +172,7 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Save' }: Pla
       />
 
       <Button
+        testID="btn-submit-place"
         mode="contained"
         onPress={handleSubmit}
         loading={isSubmitting}

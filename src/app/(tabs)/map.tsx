@@ -57,7 +57,12 @@ export default function MapScreen() {
         initialRegion={initialRegion}
       />
 
-      <FAB icon="plus" style={styles.fab} onPress={() => router.push('/place/add' as never)} />
+      <FAB
+        testID="fab-add-place"
+        icon="plus"
+        style={styles.fab}
+        onPress={() => router.push('/place/add' as never)}
+      />
     </View>
   );
 }

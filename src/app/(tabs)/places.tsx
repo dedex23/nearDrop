@@ -66,6 +66,7 @@ export default function PlacesScreen() {
   return (
     <View style={styles.container}>
       <Searchbar
+        testID="searchbar"
         placeholder="Search places..."
         value={searchQuery}
         onChangeText={setSearchQuery}
@@ -104,7 +105,12 @@ export default function PlacesScreen() {
         }
       />
 
-      <FAB icon="plus" style={styles.fab} onPress={() => router.push('/place/add' as never)} />
+      <FAB
+        testID="fab-add-place"
+        icon="plus"
+        style={styles.fab}
+        onPress={() => router.push('/place/add' as never)}
+      />
     </View>
   );
 }
