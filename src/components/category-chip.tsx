@@ -11,7 +11,12 @@ interface CategoryChipsProps {
 
 export function CategoryChips({ selected, onSelect }: CategoryChipsProps) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.container}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       {CATEGORIES.map((cat) => {
         const config = CATEGORY_CONFIG[cat];
         const isSelected = selected === cat;
@@ -21,7 +26,7 @@ export function CategoryChips({ selected, onSelect }: CategoryChipsProps) {
             icon={config.icon}
             selected={isSelected}
             onPress={() => onSelect(isSelected ? null : cat)}
-            style={[styles.chip, isSelected && { backgroundColor: config.color + '20' }]}
+            style={[styles.chip, { backgroundColor: isSelected ? config.color + '20' : '#F0F0F0' }]}
             textStyle={isSelected ? { color: config.color } : undefined}
           >
             {config.label}
@@ -49,7 +54,7 @@ export function CategoryPicker({ value, onChange }: CategoryPickerProps) {
             icon={config.icon}
             selected={isSelected}
             onPress={() => onChange(cat)}
-            style={[styles.chip, isSelected && { backgroundColor: config.color + '30' }]}
+            style={[styles.chip, { backgroundColor: isSelected ? config.color + '30' : '#F0F0F0' }]}
             textStyle={isSelected ? { color: config.color, fontWeight: '600' } : undefined}
           >
             {config.label}
@@ -62,8 +67,12 @@ export function CategoryPicker({ value, onChange }: CategoryPickerProps) {
 
 const styles = StyleSheet.create({
   container: {
+    flexGrow: 0,
     paddingHorizontal: 12,
     paddingVertical: 8,
+  },
+  contentContainer: {
+    alignItems: 'center',
   },
   chip: {
     marginRight: 8,

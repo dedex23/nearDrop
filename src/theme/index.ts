@@ -8,7 +8,7 @@ export const theme: MD3Theme = {
     primary: '#6200EE',
     primaryContainer: '#E8DEF8',
     secondary: '#03DAC6',
-    secondaryContainer: '#CCFFF8',
+    secondaryContainer: '#E8DEF8',
     background: '#F5F5F5',
     surface: '#FFFFFF',
     error: '#B00020',
