@@ -1,4 +1,4 @@
-import { checkGeofences } from './geofencing';
+import { checkGeofences, _resetGeofenceLock } from './geofencing';
 import { getActivePlaces, markNotified } from '@/db/queries';
 import { sendProximityNotification, sendGroupedNotification } from './notifications';
 import { useSettingsStore } from '@/stores/settings-store';
@@ -62,6 +62,7 @@ function defaultSettings() {
 beforeEach(() => {
   jest.clearAllMocks();
   jest.useRealTimers();
+  _resetGeofenceLock();
 
   // Default settings mock
   jest.spyOn(useSettingsStore, 'getState').mockReturnValue(defaultSettings());
@@ -83,6 +84,8 @@ describe('checkGeofences', () => {
     });
 
     it('proceeds when isQuietMode is false', async () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2024-06-15T14:00:00'));
       mockGetActivePlaces.mockResolvedValue([]);
       await checkGeofences(48.8566, 2.3522);
       expect(mockGetActivePlaces).toHaveBeenCalled();
@@ -400,6 +403,66 @@ describe('checkGeofences', () => {
         '[NearDrop] Geofencing check error:',
         expect.any(Error)
       );
+      consoleSpy.mockRestore();
+    });
+  });
+
+  // --- Concurrency lock ---
+  describe('concurrency lock', () => {
+    it('prevents duplicate notifications when called concurrently', async () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2024-06-15T14:00:00'));
+
+      const place = makePlace();
+      // Use a deferred promise so the first call stays "in flight"
+      let resolveQuery!: (value: Place[]) => void;
+      mockGetActivePlaces.mockImplementation(
+        () => new Promise((resolve) => {
+          resolveQuery = resolve;
+        })
+      );
+
+      // Fire 3 concurrent calls (simulates batched location updates)
+      const p1 = checkGeofences(48.8566, 2.3522);
+      const p2 = checkGeofences(48.8566, 2.3522);
+      const p3 = checkGeofences(48.8566, 2.3522);
+
+      // Only the first call should have reached getActivePlaces
+      expect(mockGetActivePlaces).toHaveBeenCalledTimes(1);
+
+      // Resolve the query and let everything settle
+      resolveQuery([place]);
+      await Promise.all([p1, p2, p3]);
+
+      // Only 1 notification should have been sent
+      expect(mockSendProximity).toHaveBeenCalledTimes(1);
+    });
+
+    it('releases lock after completion so next call proceeds', async () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2024-06-15T14:00:00'));
+
+      mockGetActivePlaces.mockResolvedValue([]);
+
+      await checkGeofences(48.8566, 2.3522);
+      await checkGeofences(48.8566, 2.3522);
+
+      // Both calls should have proceeded (sequentially)
+      expect(mockGetActivePlaces).toHaveBeenCalledTimes(2);
+    });
+
+    it('releases lock even when an error occurs', async () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2024-06-15T14:00:00'));
+
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      mockGetActivePlaces.mockRejectedValueOnce(new Error('DB error'));
+      mockGetActivePlaces.mockResolvedValueOnce([]);
+
+      await checkGeofences(48.8566, 2.3522); // errors but releases lock
+      await checkGeofences(48.8566, 2.3522); // should proceed normally
+
+      expect(mockGetActivePlaces).toHaveBeenCalledTimes(2);
       consoleSpy.mockRestore();
     });
   });

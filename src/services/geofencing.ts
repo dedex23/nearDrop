@@ -5,6 +5,16 @@ import { sendProximityNotification, sendGroupedNotification } from './notificati
 import { useSettingsStore } from '@/stores/settings-store';
 import type { Place } from '@/types';
 
+// In-memory lock to prevent concurrent executions.
+// JS is single-threaded so the synchronous flag flip before the first `await`
+// is enough to guarantee mutual exclusion.
+let isChecking = false;
+
+/** @internal Reset lock — only for tests */
+export function _resetGeofenceLock() {
+  isChecking = false;
+}
+
 /**
  * Main geofencing check. Called on every background location update.
  * 1. Check quiet mode & active hours
@@ -14,6 +24,8 @@ import type { Place } from '@/types';
  * 5. Trigger notifications for places within radius (with cooldown)
  */
 export async function checkGeofences(currentLat: number, currentLon: number): Promise<void> {
+  if (isChecking) return;
+  isChecking = true;
   try {
     const settings = useSettingsStore.getState();
 
@@ -61,6 +73,8 @@ export async function checkGeofences(currentLat: number, currentLon: number): Pr
     }
   } catch (error) {
     console.error('[NearDrop] Geofencing check error:', error);
+  } finally {
+    isChecking = false;
   }
 }
 

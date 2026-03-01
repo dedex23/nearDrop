@@ -44,6 +44,7 @@ export async function sendProximityNotification(
   const distanceText = distanceMeters ? ` (${formatDistance(distanceMeters)})` : '';
 
   await Notifications.scheduleNotificationAsync({
+    identifier: `proximity-${place.id}`,
     content: {
       title: `Near: ${place.name}`,
       body: `${place.category} — ${place.address}${distanceText}`,
@@ -63,7 +64,9 @@ export async function sendGroupedNotification(places: Place[]): Promise<void> {
   }
 
   const names = places.map((p) => p.name).join(', ');
+  const groupId = places.map((p) => p.id).sort().join('-');
   await Notifications.scheduleNotificationAsync({
+    identifier: `proximity-group-${groupId}`,
     content: {
       title: `${places.length} places nearby`,
       body: names,
