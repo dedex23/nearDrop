@@ -64,7 +64,7 @@ export default function PlaceDetailScreen() {
         onPress: async () => {
           isDeleting.current = true;
           await removePlace(place.id);
-          router.replace('/(tabs)/places');
+          router.back();
         },
       },
     ]);
