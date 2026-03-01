@@ -54,6 +54,23 @@ export function extractAddressFromText(text: string): string | null {
   return null;
 }
 
+/**
+ * Extract location hints typical of social media posts.
+ * Looks for pin emoji patterns and "at Location" phrases.
+ * Distinct from extractAddressFromText which targets structured addresses.
+ */
+export function extractLocationHintFromText(text: string): string | null {
+  // 1. Pin emoji: "📍 Location Name"
+  const pinMatch = text.match(/📍\s*([^\n📍🔗#@]{3,60})/);
+  if (pinMatch) return pinMatch[1].trim();
+
+  // 2. "at Location" (FB shares: "was at Le Comptoir")
+  const atMatch = text.match(/\bat\s+([A-Z\u00C0-\u024F][^\n,#]{2,50})/);
+  if (atMatch) return atMatch[1].trim();
+
+  return null;
+}
+
 function isValidCoordinate(lat: number, lon: number): boolean {
   return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
 }

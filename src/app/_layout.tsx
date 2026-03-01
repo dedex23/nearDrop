@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Slot, SplashScreen, useRouter } from 'expo-router';
+import { Stack, SplashScreen, useRouter } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';
 import * as Notifications from 'expo-notifications';
 import { ShareIntentProvider, useShareIntentContext } from 'expo-share-intent';
@@ -54,16 +54,16 @@ function RootLayoutInner() {
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
       const placeId = response.notification.request.content.data?.placeId as string | undefined;
       if (placeId) {
-        router.push(`/place/${placeId}` as never);
+        router.push(`/place/${placeId}`);
       }
     });
     return () => subscription.remove();
   }, [router]);
 
-  // Handle share intent → navigate to share screen
+  // Handle share intent → navigate to share screen (push, not replace, to keep tabs mounted)
   useEffect(() => {
     if (hasShareIntent) {
-      router.replace('/share-intent' as never);
+      router.push('/share-intent');
     }
   }, [hasShareIntent, router]);
 
@@ -73,7 +73,14 @@ function RootLayoutInner() {
 
   if (!isReady) return null;
 
-  return <Slot />;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="place" />
+      <Stack.Screen name="import" />
+      <Stack.Screen name="share-intent" options={{ presentation: 'modal' }} />
+    </Stack>
+  );
 }
 
 export default function RootLayout() {

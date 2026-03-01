@@ -1,4 +1,8 @@
-import { extractCoordsFromGoogleMapsUrl, extractAddressFromText } from './address-parser';
+import {
+  extractCoordsFromGoogleMapsUrl,
+  extractAddressFromText,
+  extractLocationHintFromText,
+} from './address-parser';
 
 describe('extractCoordsFromGoogleMapsUrl', () => {
   it('extracts coords from @lat,lon format', () => {
@@ -132,5 +136,40 @@ describe('extractAddressFromText', () => {
     const text = 'Great restaurant!\n42 Boulevard Haussmann\nHighly recommended';
     const result = extractAddressFromText(text);
     expect(result).toContain('42 Boulevard Haussmann');
+  });
+});
+
+describe('extractLocationHintFromText', () => {
+  it('extracts location after pin emoji', () => {
+    expect(extractLocationHintFromText('📍 Le Marais, Paris')).toBe('Le Marais, Paris');
+  });
+
+  it('extracts location after pin emoji without space', () => {
+    expect(extractLocationHintFromText('📍Café de Flore')).toBe('Café de Flore');
+  });
+
+  it('extracts "at Location" pattern', () => {
+    expect(extractLocationHintFromText('was at Le Comptoir')).toBe('Le Comptoir');
+  });
+
+  it('extracts "at" with accented capital letter', () => {
+    expect(extractLocationHintFromText('dinner at Élysée Palace')).toBe('Élysée Palace');
+  });
+
+  it('extracts pin emoji from multiline text', () => {
+    const text = 'Amazing food!\n📍 Le Bouillon Chartier\n#foodie #paris';
+    expect(extractLocationHintFromText(text)).toBe('Le Bouillon Chartier');
+  });
+
+  it('returns null for text without location hints', () => {
+    expect(extractLocationHintFromText('Just a random post about food')).toBeNull();
+  });
+
+  it('returns null for empty string', () => {
+    expect(extractLocationHintFromText('')).toBeNull();
+  });
+
+  it('ignores "at" followed by lowercase (not a proper noun)', () => {
+    expect(extractLocationHintFromText('looking at things')).toBeNull();
   });
 });

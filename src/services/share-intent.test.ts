@@ -7,8 +7,14 @@ jest.mock('./geocoding', () => ({
 
 const mockGeocode = geocodeAddress as jest.MockedFunction<typeof geocodeAddress>;
 
+// Mock global fetch — rejects by default so existing tests are unaffected
+const mockFetch = jest.fn() as jest.MockedFunction<typeof fetch>;
+global.fetch = mockFetch;
+
 beforeEach(() => {
   mockGeocode.mockReset();
+  mockFetch.mockReset();
+  mockFetch.mockRejectedValue(new Error('fetch disabled in tests'));
 });
 
 describe('parseSharedContent', () => {
@@ -61,6 +67,103 @@ describe('parseSharedContent', () => {
       );
       expect(result.latitude).toBe(0);
       expect(result.longitude).toBe(0);
+    });
+
+    it('resolves shortened maps.app.goo.gl URL via HTML body parsing', async () => {
+      mockFetch.mockResolvedValueOnce({
+        url: 'https://maps.app.goo.gl/abc123',
+        text: () =>
+          Promise.resolve(
+            '<html><a href="/maps/place/Le+Bouillon/@48.8720,2.3430,17z">link</a></html>'
+          ),
+      } as unknown as Response);
+      const result = await parseSharedContent(
+        'Le Bouillon\nhttps://maps.app.goo.gl/abc123',
+        null
+      );
+      expect(result.sourceType).toBe('google_maps');
+      expect(result.latitude).toBe(48.872);
+      expect(result.longitude).toBe(2.343);
+      expect(result.name).toBe('Le Bouillon');
+    });
+
+    it('falls back to geocoding when redirect resolution fails', async () => {
+      mockFetch.mockRejectedValue(new Error('network error'));
+      mockGeocode.mockResolvedValue({ latitude: 48.85, longitude: 2.35, displayName: 'Paris' });
+      const result = await parseSharedContent(
+        'Paris Spot\nhttps://maps.app.goo.gl/xyz789',
+        null
+      );
+      expect(result.sourceType).toBe('google_maps');
+      expect(result.latitude).toBe(48.85);
+      expect(result.longitude).toBe(2.35);
+    });
+
+    it('falls back to geocoding when resolved URL still has no coords', async () => {
+      mockFetch.mockResolvedValueOnce({
+        url: 'https://maps.app.goo.gl/nocoords',
+        text: () =>
+          Promise.resolve(
+            '<html><a href="/maps/place/SomePlace/">link</a></html>'
+          ),
+      } as unknown as Response);
+      mockGeocode.mockResolvedValue({ latitude: 48.86, longitude: 2.34, displayName: 'SomePlace' });
+      const result = await parseSharedContent(
+        'SomePlace\nhttps://maps.app.goo.gl/nocoords',
+        null
+      );
+      expect(result.sourceType).toBe('google_maps');
+      expect(result.latitude).toBe(48.86);
+      expect(result.longitude).toBe(2.34);
+    });
+
+    it('uses metaTitle as name and geocodes address from resolved URL path', async () => {
+      mockFetch.mockResolvedValueOnce({
+        url: 'https://maps.app.goo.gl/gXZVxStjPt5HCoNu6',
+        text: () =>
+          Promise.resolve(
+            '<html><a href="/maps/place/INDIAN+FACTORY+-+LA+COURNEUVE,+1+Bd+Pasteur,+93120+La+Courneuve/data=!4m2">link</a></html>'
+          ),
+      } as unknown as Response);
+      mockGeocode.mockResolvedValue({
+        latitude: 48.9197,
+        longitude: 2.3826,
+        displayName: '1 Boulevard Pasteur, La Courneuve',
+      });
+      const result = await parseSharedContent(
+        'https://maps.app.goo.gl/gXZVxStjPt5HCoNu6',
+        'https://maps.app.goo.gl/gXZVxStjPt5HCoNu6',
+        'INDIAN FACTORY - LA COURNEUVE'
+      );
+      expect(result.sourceType).toBe('google_maps');
+      expect(result.name).toBe('INDIAN FACTORY - LA COURNEUVE');
+      expect(result.address).toBe(
+        'INDIAN FACTORY - LA COURNEUVE, 1 Bd Pasteur, 93120 La Courneuve'
+      );
+      expect(result.latitude).toBe(48.9197);
+      expect(result.longitude).toBe(2.3826);
+    });
+
+    it('extracts city from metaTitle "NAME - CITY" when full title is not geocodable', async () => {
+      // Simulates RN on Android: fetch returns consent page, no /maps/place/ in HTML
+      mockFetch.mockResolvedValueOnce({
+        url: 'https://maps.app.goo.gl/xyz',
+        text: () => Promise.resolve('<html><body>Consent page</body></html>'),
+      } as unknown as Response);
+      // First call with full metaTitle fails, second with city part succeeds
+      mockGeocode
+        .mockResolvedValueOnce(null) // "INDIAN FACTORY - LA COURNEUVE" → not found
+        .mockResolvedValueOnce({ latitude: 48.9267, longitude: 2.3896, displayName: 'La Courneuve' });
+      const result = await parseSharedContent(
+        'https://maps.app.goo.gl/xyz',
+        'https://maps.app.goo.gl/xyz',
+        'INDIAN FACTORY - LA COURNEUVE'
+      );
+      expect(result.sourceType).toBe('google_maps');
+      expect(result.name).toBe('INDIAN FACTORY - LA COURNEUVE');
+      expect(result.address).toBe('LA COURNEUVE');
+      expect(result.latitude).toBe(48.9267);
+      expect(result.longitude).toBe(2.3896);
     });
   });
 
@@ -194,6 +297,173 @@ describe('parseSharedContent', () => {
         null
       );
       expect(result.name!.length).toBeLessThanOrEqual(80);
+    });
+  });
+
+  // --- Social enrichment ---
+  describe('Instagram enrichment', () => {
+    const makeOgHtml = (props: Record<string, string>) =>
+      '<html><head>' +
+      Object.entries(props)
+        .map(([k, v]) => `<meta property="${k}" content="${v}">`)
+        .join('') +
+      '</head><body></body></html>';
+
+    const mockFetchOg = (html: string) => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        text: () => Promise.resolve(html),
+      } as unknown as Response);
+    };
+
+    it('extracts address from 📍 in shared text and geocodes', async () => {
+      mockFetch.mockRejectedValue(new Error('no fetch'));
+      mockGeocode.mockResolvedValue({
+        latitude: 48.86,
+        longitude: 2.35,
+        displayName: 'Le Marais',
+      });
+      const result = await parseSharedContent(
+        'Amazing brunch!\n📍 Le Marais, Paris\nhttps://www.instagram.com/p/ABC123/',
+        null
+      );
+      expect(result.sourceType).toBe('instagram');
+      expect(result.address).toBe('Le Marais, Paris');
+      expect(result.latitude).toBe(48.86);
+      expect(result.longitude).toBe(2.35);
+    });
+
+    it('extracts address from OG description when text has no location', async () => {
+      mockGeocode.mockResolvedValue({
+        latitude: 48.87,
+        longitude: 2.33,
+        displayName: 'Café de Flore',
+      });
+      mockFetchOg(
+        makeOgHtml({
+          'og:title': 'Café de Flore',
+          'og:description': '📍 Café de Flore, Saint-Germain',
+        })
+      );
+      const result = await parseSharedContent(
+        'Great coffee\nhttps://www.instagram.com/p/DEF456/',
+        null
+      );
+      expect(result.sourceType).toBe('instagram');
+      expect(result.address).toBe('Café de Flore, Saint-Germain');
+      expect(result.latitude).toBe(48.87);
+    });
+
+    it('falls back gracefully when fetch times out', async () => {
+      mockFetch.mockRejectedValue(new Error('AbortError'));
+      const result = await parseSharedContent(
+        'Nice place\nhttps://www.instagram.com/p/GHI789/',
+        null
+      );
+      expect(result.sourceType).toBe('instagram');
+      expect(result.name).toBe('Nice place');
+      expect(result.address).toBe('');
+    });
+
+    it('uses OG title as name when no text name exists', async () => {
+      mockFetchOg(makeOgHtml({ 'og:title': 'Le Petit Cler' }));
+      const result = await parseSharedContent(
+        'https://www.instagram.com/p/JKL012/',
+        null
+      );
+      expect(result.name).toBe('Le Petit Cler');
+    });
+  });
+
+  describe('Facebook enrichment', () => {
+    it('extracts direct coordinates from OG place:location tags', async () => {
+      const html =
+        '<html><head>' +
+        '<meta property="og:title" content="Le Comptoir">' +
+        '<meta property="place:location:latitude" content="48.8530">' +
+        '<meta property="place:location:longitude" content="2.3499">' +
+        '</head></html>';
+      mockFetch.mockResolvedValue({
+        ok: true,
+        text: () => Promise.resolve(html),
+      } as unknown as Response);
+      const result = await parseSharedContent(
+        'Check this out\nhttps://www.facebook.com/LeComptoir/posts/123',
+        null
+      );
+      expect(result.sourceType).toBe('facebook');
+      expect(result.latitude).toBe(48.853);
+      expect(result.longitude).toBe(2.3499);
+      expect(result.name).toBe('Check this out');
+    });
+
+    it('extracts "at Location" pattern from shared text', async () => {
+      mockFetch.mockRejectedValue(new Error('no fetch'));
+      mockGeocode.mockResolvedValue({
+        latitude: 48.85,
+        longitude: 2.34,
+        displayName: 'Le Comptoir',
+      });
+      const result = await parseSharedContent(
+        'was at Le Comptoir\nhttps://www.facebook.com/posts/456',
+        null
+      );
+      expect(result.sourceType).toBe('facebook');
+      expect(result.address).toBe('Le Comptoir');
+      expect(result.latitude).toBe(48.85);
+    });
+
+    it('falls back to default when fetch fails and no text hints', async () => {
+      mockFetch.mockRejectedValue(new Error('blocked'));
+      const result = await parseSharedContent(
+        'Check this\nhttps://www.facebook.com/posts/789',
+        null
+      );
+      expect(result.sourceType).toBe('facebook');
+      expect(result.name).toBe('Check this');
+      expect(result.address).toBe('');
+    });
+  });
+
+  describe('enrichment priority', () => {
+    it('prefers structured address from text over OG description hint', async () => {
+      const html =
+        '<head><meta property="og:description" content="📍 Some Other Place"></head>';
+      mockFetch.mockResolvedValue({
+        ok: true,
+        text: () => Promise.resolve(html),
+      } as unknown as Response);
+      mockGeocode.mockResolvedValue({
+        latitude: 48.86,
+        longitude: 2.35,
+        displayName: 'Rivoli',
+      });
+      const result = await parseSharedContent(
+        '15 Rue de Rivoli, 75001 Paris\nhttps://www.instagram.com/p/XYZ/',
+        null
+      );
+      expect(result.address).toContain('Rue de Rivoli');
+      expect(result.latitude).toBe(48.86);
+    });
+
+    it('decodes HTML entities in OG content', async () => {
+      const html =
+        '<head><meta property="og:description" content="📍 Caf&eacute; de l&#39;Industrie"></head>';
+      mockFetch.mockResolvedValue({
+        ok: true,
+        text: () => Promise.resolve(html),
+      } as unknown as Response);
+      mockGeocode.mockResolvedValue({
+        latitude: 48.85,
+        longitude: 2.37,
+        displayName: "Café de l'Industrie",
+      });
+      const result = await parseSharedContent(
+        'Great place\nhttps://www.instagram.com/p/HTML/',
+        null
+      );
+      // &eacute; is not in our decoder but &#39; is
+      expect(result.latitude).toBe(48.85);
     });
   });
 });

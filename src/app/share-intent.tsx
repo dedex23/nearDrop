@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { ActivityIndicator, Text } from 'react-native-paper';
@@ -16,18 +16,24 @@ export default function ShareIntentScreen() {
   const defaultRadius = useSettingsStore((s) => s.defaultRadius);
   const [initialValues, setInitialValues] = useState<Partial<PlaceInsert> | null>(null);
   const [isParsing, setIsParsing] = useState(true);
+  const hasStartedParsing = useRef(false);
 
   useEffect(() => {
-    (async () => {
-      if (!shareIntent?.text && !shareIntent?.webUrl) {
-        setIsParsing(false);
-        return;
-      }
+    console.log('[NearDrop] shareIntent:', JSON.stringify(shareIntent));
 
+    // Ignore empty updates — the lib may reset shareIntent after the initial delivery
+    if (!shareIntent?.text && !shareIntent?.webUrl) return;
+
+    // Lock: only process the first valid shareIntent delivery
+    if (hasStartedParsing.current) return;
+    hasStartedParsing.current = true;
+
+    (async () => {
       try {
         const parsed = await parseSharedContent(
           shareIntent.text ?? null,
-          shareIntent.webUrl ?? null
+          shareIntent.webUrl ?? null,
+          shareIntent.meta?.title ?? null
         );
         setInitialValues({
           name: parsed.name ?? '',
@@ -54,15 +60,23 @@ export default function ShareIntentScreen() {
     })();
   }, [shareIntent, defaultRadius]);
 
+  // Safety net: stop spinner after 5s if no data arrives
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (isParsing) setIsParsing(false);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [isParsing]);
+
   const handleSubmit = async (data: PlaceInsert) => {
     await addPlace(data);
     resetShareIntent();
-    router.replace('/(tabs)/places');
+    router.back();
   };
 
   const handleCancel = () => {
     resetShareIntent();
-    router.replace('/(tabs)/places');
+    router.back();
   };
 
   if (isParsing) {
@@ -90,6 +104,7 @@ export default function ShareIntentScreen() {
         }}
       />
       <PlaceForm
+        key={initialValues ? 'filled' : 'empty'}
         initialValues={initialValues ?? { radius: defaultRadius }}
         onSubmit={handleSubmit}
         submitLabel="Save Place"

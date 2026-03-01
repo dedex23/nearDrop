@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, ScrollView, StyleSheet, Alert, Linking } from 'react-native';
 import { Text, Button, Chip, Switch, Divider, IconButton } from 'react-native-paper';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
@@ -18,8 +18,13 @@ export default function PlaceDetailScreen() {
   const userLocation = useAppStore((s) => s.userLocation);
 
   const [isEditing, setIsEditing] = useState(false);
+  const isDeleting = useRef(false);
 
   const place = places.find((p) => p.id === id);
+
+  // After deletion, the store updates and place becomes undefined.
+  // Return null to avoid re-rendering with stale navigation state.
+  if (isDeleting.current) return null;
 
   if (!place) {
     return (
@@ -57,8 +62,9 @@ export default function PlaceDetailScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
+          isDeleting.current = true;
           await removePlace(place.id);
-          router.back();
+          router.replace('/(tabs)/places');
         },
       },
     ]);
