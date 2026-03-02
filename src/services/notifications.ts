@@ -23,7 +23,10 @@ export async function setupNotifications(): Promise<boolean> {
     finalStatus = status;
   }
 
-  if (finalStatus !== 'granted') return false;
+  if (finalStatus !== 'granted') {
+    console.log('[NearDrop][Notif] Permission denied:', finalStatus);
+    return false;
+  }
 
   // Delete legacy channel (Android won't let apps modify existing channels)
   await Notifications.deleteNotificationChannelAsync('proximity').catch(() => {});
@@ -37,6 +40,7 @@ export async function setupNotifications(): Promise<boolean> {
     lightColor: '#6200EE',
   });
 
+  console.log('[NearDrop][Notif] Setup OK, channel proximity-v2 created');
   return true;
 }
 
@@ -46,6 +50,7 @@ export async function sendProximityNotification(
 ): Promise<void> {
   const distanceText = distanceMeters ? ` (${formatDistance(distanceMeters)})` : '';
 
+  console.log('[NearDrop][Notif] Sending:', place.name, distanceText);
   await Notifications.scheduleNotificationAsync({
     identifier: `proximity-${place.id}`,
     content: {
@@ -66,6 +71,7 @@ export async function sendGroupedNotification(places: Place[]): Promise<void> {
   }
 
   const names = places.map((p) => p.name).join(', ');
+  console.log('[NearDrop][Notif] Sending grouped:', names);
   const groupId = places.map((p) => p.id).sort().join('-');
   await Notifications.scheduleNotificationAsync({
     identifier: `proximity-group-${groupId}`,

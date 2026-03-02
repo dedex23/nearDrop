@@ -400,7 +400,7 @@ describe('checkGeofences', () => {
 
       await expect(checkGeofences(48.8566, 2.3522)).resolves.toBeUndefined();
       expect(consoleSpy).toHaveBeenCalledWith(
-        '[NearDrop] Geofencing check error:',
+        '[NearDrop][Geo] Check error:',
         expect.any(Error)
       );
       consoleSpy.mockRestore();

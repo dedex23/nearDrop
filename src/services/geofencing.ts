@@ -24,16 +24,25 @@ export function _resetGeofenceLock() {
  * 5. Trigger notifications for places within radius (with cooldown)
  */
 export async function checkGeofences(currentLat: number, currentLon: number): Promise<void> {
-  if (isChecking) return;
+  if (isChecking) {
+    console.log('[NearDrop][Geo] Skipped (already checking)');
+    return;
+  }
   isChecking = true;
   try {
     const settings = useSettingsStore.getState();
 
     // Skip if quiet mode is on
-    if (settings.isQuietMode) return;
+    if (settings.isQuietMode) {
+      console.log('[NearDrop][Geo] Skipped (quiet mode)');
+      return;
+    }
 
     // Skip if outside active hours
-    if (!isWithinActiveHours(settings.activeHoursStart, settings.activeHoursEnd)) return;
+    if (!isWithinActiveHours(settings.activeHoursStart, settings.activeHoursEnd)) {
+      console.log('[NearDrop][Geo] Skipped (outside active hours', settings.activeHoursStart, '-', settings.activeHoursEnd, ', now:', new Date().getHours(), ')');
+      return;
+    }
 
     const allPlaces = await getActivePlaces();
 
@@ -43,18 +52,26 @@ export async function checkGeofences(currentLat: number, currentLon: number): Pr
         Math.abs(p.latitude - currentLat) < ROUGH_FILTER_DEGREES &&
         Math.abs(p.longitude - currentLon) < ROUGH_FILTER_DEGREES
     );
+    console.log('[NearDrop][Geo] Places:', allPlaces.length, '→ bbox candidates:', candidates.length);
 
     const cooldownMs = settings.cooldownHours * 60 * 60 * 1000;
     const placesToNotify: { place: Place; distance: number }[] = [];
 
     for (const place of candidates) {
       const distance = haversineDistance(currentLat, currentLon, place.latitude, place.longitude);
-      if (distance <= place.radius && !isCooldownActive(place, cooldownMs)) {
+      const inRadius = distance <= place.radius;
+      const onCooldown = isCooldownActive(place, cooldownMs);
+      if (inRadius) {
+        console.log('[NearDrop][Geo]', place.name, ':', Math.round(distance), 'm (radius:', place.radius, 'm, cooldown:', onCooldown, ')');
+      }
+      if (inRadius && !onCooldown) {
         placesToNotify.push({ place, distance });
       }
     }
 
     if (placesToNotify.length === 0) return;
+
+    console.log('[NearDrop][Geo] Notifying', placesToNotify.length, 'place(s):', placesToNotify.map((p) => p.place.name).join(', '));
 
     // Send notifications
     if (placesToNotify.length === 1) {
@@ -68,7 +85,7 @@ export async function checkGeofences(currentLat: number, currentLon: number): Pr
       }
     }
   } catch (error) {
-    console.error('[NearDrop] Geofencing check error:', error);
+    console.error('[NearDrop][Geo] Check error:', error);
   } finally {
     isChecking = false;
   }
