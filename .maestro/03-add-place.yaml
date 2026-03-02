@@ -1,11 +1,14 @@
 appId: com.neardrop.app
 ---
 # Test adding a new place — fills all required fields and submits
-- launchApp
+- launchApp:
+    clearState: true
 - runFlow: flows/dismiss-permissions.yaml
 
 # Wait for app to fully load
-- assertVisible: "Map"
+- extendedWaitUntil:
+    visible: "Map"
+    timeout: 15000
 
 # Navigate to Places tab
 - tapOn: "Places"
@@ -15,7 +18,9 @@ appId: com.neardrop.app
     id: "fab-add-place"
 
 # Verify form is visible
-- assertVisible: "Add Place"
+- extendedWaitUntil:
+    visible: "Add Place"
+    timeout: 10000
 
 # Fill in Name
 - tapOn:

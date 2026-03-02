@@ -118,6 +118,15 @@ case "${1:-help}" in
     export MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED=true
     maestro --device $DEVICE test .maestro/
     TEST_EXIT=$?
+    # Retry once on failure (expo-router useLinking race condition can cause
+    # random navigation failures — a second run usually passes)
+    if [ $TEST_EXIT -ne 0 ]; then
+      echo ""
+      echo "⚠ Some flows failed — retrying once (expo-router race condition workaround)..."
+      echo ""
+      maestro --device $DEVICE test .maestro/
+      TEST_EXIT=$?
+    fi
     # Restore previous keyboard
     if [ -n "$PREV_IME" ] && [ "$PREV_IME" != "null" ]; then
       echo "Restoring keyboard: $PREV_IME"

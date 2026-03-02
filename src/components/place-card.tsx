@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 import { Card, Chip, Text } from 'react-native-paper';
 import type { Place } from '@/types';
@@ -11,7 +11,7 @@ interface PlaceCardProps {
   onPress: () => void;
 }
 
-function PlaceCardInner({ place, onPress }: PlaceCardProps) {
+export function PlaceCard({ place, onPress }: PlaceCardProps) {
   const userLocation = useAppStore((s) => s.userLocation);
   const config = CATEGORY_CONFIG[place.category];
 
@@ -66,8 +66,6 @@ function PlaceCardInner({ place, onPress }: PlaceCardProps) {
     </Card>
   );
 }
-
-export const PlaceCard = React.memo(PlaceCardInner);
 
 const styles = StyleSheet.create({
   card: {

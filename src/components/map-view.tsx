@@ -17,7 +17,7 @@ type Props = {
   };
 };
 
-function MapViewInner({ places, userLocation, initialRegion }: Props) {
+export default function MapViewComponent({ places, userLocation, initialRegion }: Props) {
   const router = useRouter();
 
   const placesWithDistance = useMemo(
@@ -71,8 +71,6 @@ function MapViewInner({ places, userLocation, initialRegion }: Props) {
     </MapView>
   );
 }
-
-export default React.memo(MapViewInner);
 
 const styles = StyleSheet.create({
   map: {
