@@ -2,16 +2,30 @@ import { eq, like, desc, or } from 'drizzle-orm';
 import { randomUUID } from 'expo-crypto';
 import { db } from './client';
 import { places } from './schema';
+import { CATEGORIES, SOURCE_TYPES } from '@/types';
 import type { Place, PlaceInsert, Category, SourceType } from '@/types';
 
 type PlaceRow = typeof places.$inferSelect;
 
+function safeParseTags(raw: string): string[] {
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 function rowToPlace(row: PlaceRow): Place {
   return {
     ...row,
-    tags: JSON.parse(row.tags) as string[],
-    category: row.category as Category,
-    sourceType: row.sourceType as SourceType,
+    tags: safeParseTags(row.tags),
+    category: (CATEGORIES as readonly string[]).includes(row.category)
+      ? (row.category as Category)
+      : 'other',
+    sourceType: (SOURCE_TYPES as readonly string[]).includes(row.sourceType)
+      ? (row.sourceType as SourceType)
+      : 'manual',
   };
 }
 

@@ -21,6 +21,9 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Save' }: Pla
   const [radius, setRadius] = useState(initialValues?.radius ?? 150);
   const [latitude, setLatitude] = useState(initialValues?.latitude ?? 0);
   const [longitude, setLongitude] = useState(initialValues?.longitude ?? 0);
+  const [hasCoordinates, setHasCoordinates] = useState(
+    initialValues?.latitude !== undefined && initialValues?.longitude !== undefined
+  );
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodeError, setGeocodeError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,6 +38,7 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Save' }: Pla
     if (result) {
       setLatitude(result.latitude);
       setLongitude(result.longitude);
+      setHasCoordinates(true);
     } else {
       setGeocodeError('Address not found. Try a more specific address.');
     }
@@ -57,11 +61,12 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Save' }: Pla
       // Auto-geocode if no coordinates yet
       let finalLat = latitude;
       let finalLon = longitude;
-      if (finalLat === 0 && finalLon === 0) {
+      if (!hasCoordinates) {
         const result = await geocodeAddress(address);
         if (result) {
           finalLat = result.latitude;
           finalLon = result.longitude;
+          setHasCoordinates(true);
         }
       }
 
@@ -124,7 +129,7 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Save' }: Pla
       </View>
       {errors.address && <HelperText type="error">{errors.address}</HelperText>}
       {geocodeError && <HelperText type="error">{geocodeError}</HelperText>}
-      {latitude !== 0 && longitude !== 0 && (
+      {hasCoordinates && (
         <HelperText type="info">
           Coordinates: {latitude.toFixed(5)}, {longitude.toFixed(5)}
         </HelperText>

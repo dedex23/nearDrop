@@ -58,7 +58,8 @@ function RootLayoutInner() {
       }
     });
     return () => subscription.remove();
-  }, [router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // router is a stable Expo Router singleton
 
   // Handle share intent → navigate to share screen (push, not replace, to keep tabs mounted)
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 import { Card, Chip, Text } from 'react-native-paper';
 import type { Place } from '@/types';
@@ -11,19 +11,22 @@ interface PlaceCardProps {
   onPress: () => void;
 }
 
-export function PlaceCard({ place, onPress }: PlaceCardProps) {
+function PlaceCardInner({ place, onPress }: PlaceCardProps) {
   const userLocation = useAppStore((s) => s.userLocation);
   const config = CATEGORY_CONFIG[place.category];
 
-  const distance =
-    userLocation
-      ? haversineDistance(
-          userLocation.latitude,
-          userLocation.longitude,
-          place.latitude,
-          place.longitude
-        )
-      : null;
+  const distance = useMemo(
+    () =>
+      userLocation
+        ? haversineDistance(
+            userLocation.latitude,
+            userLocation.longitude,
+            place.latitude,
+            place.longitude
+          )
+        : null,
+    [userLocation, place.latitude, place.longitude]
+  );
 
   return (
     <Card testID="place-card" style={[styles.card, !place.isActive && styles.inactive]} onPress={onPress}>
@@ -63,6 +66,8 @@ export function PlaceCard({ place, onPress }: PlaceCardProps) {
     </Card>
   );
 }
+
+export const PlaceCard = React.memo(PlaceCardInner);
 
 const styles = StyleSheet.create({
   card: {
