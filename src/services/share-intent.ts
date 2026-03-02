@@ -104,8 +104,11 @@ async function parseGoogleMapsShare(
   }
 
   if (coords) {
+    const addressFromPath = resolvedUrl ? extractAddressFromGoogleMapsPath(resolvedUrl) : null;
+    const address = addressFromPath || metaTitle || '';
     return {
       name: name || 'Shared place',
+      address,
       latitude: coords.latitude,
       longitude: coords.longitude,
       sourceType: 'google_maps',
@@ -117,9 +120,17 @@ async function parseGoogleMapsShare(
   // If no coords in URL, try to geocode from the best available source
   const addressFromResolvedUrl = resolvedUrl ? extractAddressFromGoogleMapsPath(resolvedUrl) : null;
 
+  // Strip business name from Google Maps path: "Business, 86 Av. X, 75008 Paris" → "86 Av. X, 75008 Paris"
+  // Nominatim can't geocode addresses prefixed with a commercial name
+  const streetFromResolvedUrl =
+    addressFromResolvedUrl?.includes(',')
+      ? addressFromResolvedUrl.split(',').slice(1).join(',').trim()
+      : null;
+
   // Build geocoding candidates in priority order
   const candidates = [
     addressFromResolvedUrl,
+    streetFromResolvedUrl,
     extractAddressFromText(rawText),
     cleanTextForAddress(rawText, url),
     metaTitle,
@@ -132,7 +143,10 @@ async function parseGoogleMapsShare(
   for (const candidate of candidates) {
     geocoded = await geocodeAddress(candidate);
     if (geocoded) {
-      address = candidate;
+      // If we matched on the stripped street, use the full path address for display
+      address = candidate === streetFromResolvedUrl && addressFromResolvedUrl
+        ? addressFromResolvedUrl
+        : candidate;
       break;
     }
   }

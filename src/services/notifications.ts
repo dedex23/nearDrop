@@ -25,13 +25,16 @@ export async function setupNotifications(): Promise<boolean> {
 
   if (finalStatus !== 'granted') return false;
 
+  // Delete legacy channel (Android won't let apps modify existing channels)
+  await Notifications.deleteNotificationChannelAsync('proximity').catch(() => {});
+
   // Create Android notification channel (required on Android 8+)
-  await Notifications.setNotificationChannelAsync('proximity', {
+  // HIGH importance enables sound + heads-up by default — no explicit sound needed
+  await Notifications.setNotificationChannelAsync('proximity-v2', {
     name: 'Proximity Alerts',
     importance: Notifications.AndroidImportance.HIGH,
     vibrationPattern: [0, 250, 250, 250],
     lightColor: '#6200EE',
-    sound: null,
   });
 
   return true;
@@ -49,9 +52,8 @@ export async function sendProximityNotification(
       title: `Near: ${place.name}`,
       body: `${place.category} — ${place.address}${distanceText}`,
       data: { placeId: place.id },
-      sound: 'default',
     },
-    trigger: { channelId: 'proximity' },
+    trigger: { channelId: 'proximity-v2' },
   });
 }
 
@@ -71,8 +73,7 @@ export async function sendGroupedNotification(places: Place[]): Promise<void> {
       title: `${places.length} places nearby`,
       body: names,
       data: { placeIds: places.map((p) => p.id) },
-      sound: 'default',
     },
-    trigger: { channelId: 'proximity' },
+    trigger: { channelId: 'proximity-v2' },
   });
 }

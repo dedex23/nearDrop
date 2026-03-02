@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stack, SplashScreen, useRouter } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';
 import * as Notifications from 'expo-notifications';
@@ -21,6 +21,7 @@ function RootLayoutInner() {
   const { isReady, error } = useDatabase();
   const loadPlaces = useAppStore((s) => s.loadPlaces);
   const isTrackingEnabled = useSettingsStore((s) => s.isTrackingEnabled);
+  const [hydrated, setHydrated] = useState(useSettingsStore.persist.hasHydrated());
   const router = useRouter();
   const { hasShareIntent } = useShareIntentContext();
 
@@ -38,16 +39,22 @@ function RootLayoutInner() {
     })();
   }, [isReady, loadPlaces]);
 
-  // Manage background tracking based on settings
+  // Wait for settings store hydration before acting on persisted values
   useEffect(() => {
-    if (!isReady) return;
+    const unsub = useSettingsStore.persist.onFinishHydration(() => setHydrated(true));
+    return () => unsub();
+  }, []);
+
+  // Manage background tracking based on settings (only after hydration)
+  useEffect(() => {
+    if (!isReady || !hydrated) return;
 
     if (isTrackingEnabled) {
       startBackgroundLocation();
     } else {
       stopBackgroundLocation();
     }
-  }, [isTrackingEnabled, isReady]);
+  }, [isTrackingEnabled, isReady, hydrated]);
 
   // Handle notification tap → navigate to place detail
   useEffect(() => {

@@ -59,15 +59,15 @@ export async function startBackgroundLocation(): Promise<boolean> {
 
   try {
     await Location.startLocationUpdatesAsync(BACKGROUND_LOCATION_TASK, {
-      accuracy: Location.Accuracy.Balanced,
-      timeInterval: 30_000, // 30 seconds
-      distanceInterval: 50, // 50 meters
-      deferredUpdatesInterval: 60_000, // Batch updates every 60s
+      accuracy: Location.Accuracy.High,
+      timeInterval: 30_000,
+      distanceInterval: 50,
       showsBackgroundLocationIndicator: true,
       foregroundService: {
         notificationTitle: 'NearDrop',
         notificationBody: 'Monitoring your proximity to saved places',
         notificationColor: '#6200EE',
+        killServiceOnDestroy: false,
       },
     });
   } catch (error) {

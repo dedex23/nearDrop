@@ -49,11 +49,8 @@ export async function checkGeofences(currentLat: number, currentLon: number): Pr
 
     for (const place of candidates) {
       const distance = haversineDistance(currentLat, currentLon, place.latitude, place.longitude);
-
-      if (distance <= place.radius) {
-        if (!isCooldownActive(place, cooldownMs)) {
-          placesToNotify.push({ place, distance });
-        }
+      if (distance <= place.radius && !isCooldownActive(place, cooldownMs)) {
+        placesToNotify.push({ place, distance });
       }
     }
 
@@ -65,7 +62,6 @@ export async function checkGeofences(currentLat: number, currentLon: number): Pr
       await sendProximityNotification(place, distance);
       await markNotified(place.id);
     } else {
-      // Group notification for multiple nearby places
       await sendGroupedNotification(placesToNotify.map((p) => p.place));
       for (const { place } of placesToNotify) {
         await markNotified(place.id);
