@@ -1,4 +1,4 @@
-import { sqliteTable, text, real, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, real, integer, index } from 'drizzle-orm/sqlite-core';
 
 export const places = sqliteTable('places', {
   id: text('id').primaryKey(),
@@ -25,4 +25,8 @@ export const places = sqliteTable('places', {
   notifiedAt: integer('notified_at', { mode: 'timestamp' }),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
-});
+}, (table) => [
+  index('idx_places_is_active').on(table.isActive),
+  index('idx_places_category').on(table.category),
+  index('idx_places_location').on(table.latitude, table.longitude),
+]);

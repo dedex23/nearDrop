@@ -137,6 +137,20 @@ describe('extractAddressFromText', () => {
     const result = extractAddressFromText(text);
     expect(result).toContain('42 Boulevard Haussmann');
   });
+
+  it('returns null for string with only numbers', () => {
+    expect(extractAddressFromText('12345')).toBeNull();
+  });
+
+  it('returns null for URL-like text', () => {
+    expect(extractAddressFromText('https://example.com')).toBeNull();
+  });
+
+  it('stops matching at newline', () => {
+    const result = extractAddressFromText('15 Rue de Rivoli\nSomething else');
+    expect(result).toContain('Rue de Rivoli');
+    expect(result).not.toContain('Something else');
+  });
 });
 
 describe('extractLocationHintFromText', () => {

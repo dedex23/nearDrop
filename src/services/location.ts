@@ -3,22 +3,39 @@ import * as Location from 'expo-location';
 
 export const BACKGROUND_LOCATION_TASK = 'NEARDROP_BACKGROUND_LOCATION';
 
+interface LocationTaskData {
+  locations: Location.LocationObject[];
+}
+
+function isLocationTaskData(data: unknown): data is LocationTaskData {
+  return (
+    data !== null &&
+    typeof data === 'object' &&
+    'locations' in (data as object) &&
+    Array.isArray((data as LocationTaskData).locations)
+  );
+}
+
 // Register the background task at module level (required by expo-task-manager)
 TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
   if (error) {
-    console.error('[NearDrop] Background location error:', error.message);
+    console.error('[NearDrop][Location] Background task error:', error);
     return;
   }
 
-  if (data) {
-    const { locations } = data as { locations: Location.LocationObject[] };
-    if (locations && locations.length > 0) {
+  if (isLocationTaskData(data)) {
+    const { locations } = data;
+    console.log('[NearDrop][Location] Task fired, locations:', locations.length);
+    if (locations.length > 0) {
       const latest = locations[locations.length - 1];
+      console.log('[NearDrop][Location] Latest:', latest.coords.latitude.toFixed(5), latest.coords.longitude.toFixed(5), 'accuracy:', Math.round(latest.coords.accuracy ?? 0), 'm');
       // Use require to avoid circular dependency
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { checkGeofences } = require('./geofencing');
       await checkGeofences(latest.coords.latitude, latest.coords.longitude);
     }
+  } else {
+    console.warn('[NearDrop][Location] Task fired with unexpected data:', JSON.stringify(data));
   }
 });
 
@@ -37,33 +54,54 @@ export async function requestLocationPermissions(): Promise<{
 
 export async function startBackgroundLocation(): Promise<boolean> {
   const perms = await requestLocationPermissions();
-  if (!perms.foreground || !perms.background) return false;
+  if (!perms.foreground || !perms.background) {
+    console.log('[NearDrop][Location] Permissions denied — fg:', perms.foreground, 'bg:', perms.background);
+    return false;
+  }
 
   const isStarted = await Location.hasStartedLocationUpdatesAsync(BACKGROUND_LOCATION_TASK).catch(
     () => false
   );
-  if (isStarted) return true;
+  if (isStarted) {
+    console.log('[NearDrop][Location] Already started, skipping');
+    return true;
+  }
 
-  await Location.startLocationUpdatesAsync(BACKGROUND_LOCATION_TASK, {
-    accuracy: Location.Accuracy.Balanced,
-    timeInterval: 30_000, // 30 seconds
-    distanceInterval: 50, // 50 meters
-    deferredUpdatesInterval: 60_000, // Batch updates every 60s
+  const opts = {
+    accuracy: Location.Accuracy.High,
+    timeInterval: 30_000,
+    distanceInterval: 50,
     showsBackgroundLocationIndicator: true,
     foregroundService: {
       notificationTitle: 'NearDrop',
       notificationBody: 'Monitoring your proximity to saved places',
       notificationColor: '#6200EE',
     },
-  });
+  };
 
-  return true;
+  // Retry once after a short delay — SharedPreferences can NPE during dev hot reload
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      console.log('[NearDrop][Location] Starting background updates (attempt', attempt + 1, ')');
+      await Location.startLocationUpdatesAsync(BACKGROUND_LOCATION_TASK, opts);
+      console.log('[NearDrop][Location] Background updates started');
+      return true;
+    } catch (error) {
+      console.error('[NearDrop][Location] Failed to start updates:', error);
+      if (attempt === 0) {
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+    }
+  }
+
+  return false;
 }
 
 export async function stopBackgroundLocation(): Promise<void> {
   try {
     const isStarted = await Location.hasStartedLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
     if (isStarted) {
+      console.log('[NearDrop][Location] Stopping background updates');
       await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
     }
   } catch {

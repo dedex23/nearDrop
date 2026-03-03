@@ -73,4 +73,13 @@ describe('formatDistance', () => {
   it('formats 10500m as 10.5km', () => {
     expect(formatDistance(10500)).toBe('10.5km');
   });
+
+  it('handles negative distance without crashing', () => {
+    expect(formatDistance(-100)).toBe('-100m');
+  });
+
+  it('handles NaN input without crashing', () => {
+    // NaN < 1000 is false, so it falls through to the km branch
+    expect(formatDistance(NaN)).toBe('NaNkm');
+  });
 });

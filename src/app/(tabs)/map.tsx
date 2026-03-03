@@ -58,7 +58,7 @@ export default function MapScreen() {
       />
 
       <FAB
-        testID="fab-add-place"
+        testID="fab-add-place-map"
         icon="plus"
         style={styles.fab}
         onPress={() => router.push('/place/add' as never)}
