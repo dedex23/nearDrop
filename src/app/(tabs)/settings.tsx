@@ -8,11 +8,11 @@ import { startBackgroundLocation, stopBackgroundLocation } from '@/services/loca
 import * as queries from '@/db/queries';
 
 const COOLDOWN_OPTIONS = [
-  { label: '1 hour', value: 1 },
-  { label: '6 hours', value: 6 },
-  { label: '12 hours', value: 12 },
-  { label: '24 hours', value: 24 },
-  { label: '48 hours', value: 48 },
+  { label: '1 heure', value: 1 },
+  { label: '6 heures', value: 6 },
+  { label: '12 heures', value: 12 },
+  { label: '24 heures', value: 24 },
+  { label: '48 heures', value: 48 },
 ];
 
 export default function SettingsScreen() {
@@ -29,8 +29,8 @@ export default function SettingsScreen() {
       const success = await startBackgroundLocation();
       if (!success) {
         Alert.alert(
-          'Permission Required',
-          'NearDrop needs background location permission to notify you when you are near saved places.'
+          'Permission requise',
+          'NearDrop a besoin de la permission de localisation en arrière-plan pour vous notifier à proximité de vos lieux sauvegardés.'
         );
         settings.updateSettings({ isTrackingEnabled: false });
       }
@@ -59,12 +59,12 @@ export default function SettingsScreen() {
       );
       await Share.share({
         message: jsonString,
-        title: `NearDrop Export — ${allPlaces.length} places`,
+        title: `NearDrop Export — ${allPlaces.length} lieux`,
       });
     } catch (error) {
       // Share.share throws if user dismisses the share sheet on iOS; not a real error
       if ((error as Error)?.message !== 'User did not share') {
-        Alert.alert('Export Failed', 'An error occurred while exporting data.');
+        Alert.alert('Échec de l\'export', 'Une erreur est survenue lors de l\'export des données.');
       }
     }
   };
@@ -72,11 +72,11 @@ export default function SettingsScreen() {
   return (
     <ScrollView style={styles.container}>
       <List.Section>
-        <List.Subheader>Location Tracking</List.Subheader>
+        <List.Subheader>Suivi de position</List.Subheader>
 
         <List.Item
-          title="Background Tracking"
-          description={settings.isTrackingEnabled ? 'Active — monitoring nearby places' : 'Paused'}
+          title="Suivi en arrière-plan"
+          description={settings.isTrackingEnabled ? 'Actif — surveillance des lieux à proximité' : 'En pause'}
           left={(props) => <List.Icon {...props} icon="crosshairs-gps" />}
           right={() => (
             <Switch
@@ -89,8 +89,8 @@ export default function SettingsScreen() {
         />
 
         <List.Item
-          title="Quiet Mode"
-          description="Temporarily silence all notifications"
+          title="Mode silencieux"
+          description="Désactiver temporairement toutes les notifications"
           left={(props) => <List.Icon {...props} icon="bell-off" />}
           right={() => (
             <Switch
@@ -106,11 +106,11 @@ export default function SettingsScreen() {
       <Divider />
 
       <List.Section>
-        <List.Subheader>Notification Settings</List.Subheader>
+        <List.Subheader>Paramètres de notification</List.Subheader>
 
         <View style={styles.sliderSection}>
           <Text variant="bodyMedium" style={styles.sliderLabel}>
-            Default Radius: {settings.defaultRadius}m
+            Rayon par défaut : {settings.defaultRadius}m
           </Text>
           <Slider
             value={settings.defaultRadius}
@@ -129,7 +129,7 @@ export default function SettingsScreen() {
 
         <View style={styles.sliderSection}>
           <Text variant="bodyMedium" style={styles.sliderLabel}>
-            Cooldown: {COOLDOWN_OPTIONS[cooldownIndex].label}
+            Intervalle : {COOLDOWN_OPTIONS[cooldownIndex].label}
           </Text>
           <Slider
             value={cooldownIndex}
@@ -148,11 +148,11 @@ export default function SettingsScreen() {
       <Divider />
 
       <List.Section>
-        <List.Subheader>Active Hours</List.Subheader>
+        <List.Subheader>Heures actives</List.Subheader>
 
         <View style={styles.sliderSection}>
           <Text variant="bodyMedium" style={styles.sliderLabel}>
-            Start: {settings.activeHoursStart}:00
+            Début : {settings.activeHoursStart}:00
           </Text>
           <Slider
             value={settings.activeHoursStart}
@@ -171,7 +171,7 @@ export default function SettingsScreen() {
 
         <View style={styles.sliderSection}>
           <Text variant="bodyMedium" style={styles.sliderLabel}>
-            End: {settings.activeHoursEnd}:00
+            Fin : {settings.activeHoursEnd}:00
           </Text>
           <Slider
             value={settings.activeHoursEnd}
@@ -192,18 +192,18 @@ export default function SettingsScreen() {
       <Divider />
 
       <List.Section>
-        <List.Subheader>Data</List.Subheader>
+        <List.Subheader>Données</List.Subheader>
 
         <List.Item
-          title="Export Data"
-          description={`Export all ${places.length} places as JSON`}
+          title="Exporter les données"
+          description={`Exporter les ${places.length} lieux en JSON`}
           left={(props) => <List.Icon {...props} icon="export" />}
           onPress={handleExport}
         />
 
         <List.Item
-          title="Import Data"
-          description="Import places from file"
+          title="Importer des données"
+          description="Importer des lieux depuis un fichier"
           left={(props) => <List.Icon {...props} icon="import" />}
           onPress={() => {
             // Navigate to import screen (Phase 3)
@@ -214,10 +214,10 @@ export default function SettingsScreen() {
       <Divider />
 
       <List.Section>
-        <List.Subheader>About</List.Subheader>
+        <List.Subheader>À propos</List.Subheader>
         <List.Item
           title="NearDrop"
-          description="v1.0.0 — Proximity notification app"
+          description="v1.0.0 — Application de notification de proximité"
           left={(props) => <List.Icon {...props} icon="information" />}
         />
       </List.Section>

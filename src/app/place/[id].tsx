@@ -29,11 +29,11 @@ export default function PlaceDetailScreen() {
   if (!place) {
     return (
       <>
-        <Stack.Screen options={{ title: 'Place Not Found' }} />
+        <Stack.Screen options={{ title: 'Lieu introuvable' }} />
         <View style={styles.centered}>
-          <Text variant="bodyLarge">Place not found</Text>
+          <Text variant="bodyLarge">Lieu introuvable</Text>
           <Button onPress={() => router.back()} style={styles.backButton}>
-            Go Back
+            Retour
           </Button>
         </View>
       </>
@@ -56,10 +56,10 @@ export default function PlaceDetailScreen() {
   };
 
   const handleDelete = () => {
-    Alert.alert('Delete Place', `Are you sure you want to delete "${place.name}"?`, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert('Supprimer le lieu', `Êtes-vous sûr de vouloir supprimer "${place.name}" ?`, [
+      { text: 'Annuler', style: 'cancel' },
       {
-        text: 'Delete',
+        text: 'Supprimer',
         style: 'destructive',
         onPress: async () => {
           isDeleting.current = true;
@@ -88,7 +88,7 @@ export default function PlaceDetailScreen() {
       <>
         <Stack.Screen
           options={{
-            title: `Edit: ${place.name}`,
+            title: `Modifier : ${place.name}`,
             headerRight: () => (
               <IconButton icon="close" onPress={() => setIsEditing(false)} />
             ),
@@ -110,7 +110,7 @@ export default function PlaceDetailScreen() {
             isActive: place.isActive,
           }}
           onSubmit={handleEditSubmit}
-          submitLabel="Save Changes"
+          submitLabel="Enregistrer"
         />
       </>
     );
@@ -144,13 +144,13 @@ export default function PlaceDetailScreen() {
 
         {distance !== null && (
           <Text variant="bodyMedium" style={styles.distance}>
-            {formatDistance(distance)} away
+            à {formatDistance(distance)}
           </Text>
         )}
 
         <View style={styles.actions}>
           <Button mode="contained" icon="navigation" onPress={handleNavigate} style={styles.navButton}>
-            Navigate
+            Itinéraire
           </Button>
         </View>
 
@@ -158,7 +158,7 @@ export default function PlaceDetailScreen() {
 
         <View style={styles.section}>
           <View style={styles.row}>
-            <Text variant="bodyMedium">Active</Text>
+            <Text variant="bodyMedium">Actif</Text>
             <Switch
               testID="switch-active"
               value={place.isActive}
@@ -169,7 +169,7 @@ export default function PlaceDetailScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text variant="labelLarge">Notification radius: {place.radius}m</Text>
+          <Text variant="labelLarge">Rayon de notification : {place.radius}m</Text>
           <Slider
             value={place.radius}
             onSlidingComplete={handleRadiusChange}
@@ -210,20 +210,20 @@ export default function PlaceDetailScreen() {
 
         <View style={styles.section}>
           <Text variant="labelLarge" style={styles.sectionTitle}>
-            Info
+            Infos
           </Text>
           <Text variant="bodySmall" style={styles.meta}>
-            Source: {place.sourceType}
+            Source : {place.sourceType}
           </Text>
           <Text variant="bodySmall" style={styles.meta}>
-            Coordinates: {place.latitude.toFixed(5)}, {place.longitude.toFixed(5)}
+            Coordonnées : {place.latitude.toFixed(5)}, {place.longitude.toFixed(5)}
           </Text>
           <Text variant="bodySmall" style={styles.meta}>
-            Added: {place.createdAt.toLocaleDateString()}
+            Ajouté le : {place.createdAt.toLocaleDateString()}
           </Text>
           {place.notifiedAt && (
             <Text variant="bodySmall" style={styles.meta}>
-              Last notified: {place.notifiedAt.toLocaleDateString()}
+              Dernière notification : {place.notifiedAt.toLocaleDateString()}
             </Text>
           )}
         </View>
@@ -236,7 +236,7 @@ export default function PlaceDetailScreen() {
           textColor="#B00020"
           style={styles.deleteButton}
         >
-          Delete Place
+          Supprimer le lieu
         </Button>
       </ScrollView>
     </>

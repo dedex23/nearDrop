@@ -74,7 +74,7 @@ export async function startBackgroundLocation(): Promise<boolean> {
     showsBackgroundLocationIndicator: true,
     foregroundService: {
       notificationTitle: 'NearDrop',
-      notificationBody: 'Monitoring your proximity to saved places',
+      notificationBody: 'Surveillance de votre proximité avec vos lieux sauvegardés',
       notificationColor: '#6200EE',
     },
   };
