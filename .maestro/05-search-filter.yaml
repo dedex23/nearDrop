@@ -1,11 +1,14 @@
 appId: com.neardrop.app
 ---
 # Test search and category filtering
-- launchApp
+- launchApp:
+    clearState: true
 - runFlow: flows/dismiss-permissions.yaml
 
 # Wait for app to fully load
-- assertVisible: "Map"
+- extendedWaitUntil:
+    visible: "Map"
+    timeout: 15000
 
 # === SETUP: Create two places with different categories ===
 
@@ -52,7 +55,9 @@ appId: com.neardrop.app
 - tapOn: "Places"
 
 # Both places should be visible
-- assertVisible: "FiltResto"
+- extendedWaitUntil:
+    visible: "FiltResto"
+    timeout: 10000
 - assertVisible: "FiltBar"
 
 # === SEARCH ===

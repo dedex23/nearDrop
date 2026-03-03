@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, ScrollView, StyleSheet, Alert, Share } from 'react-native';
 import { List, Switch, Text, Divider } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { useSettingsStore } from '@/stores/settings-store';
@@ -48,7 +48,7 @@ export default function SettingsScreen() {
   const handleExport = async () => {
     try {
       const allPlaces = await queries.getAllPlaces();
-      JSON.stringify(
+      const jsonString = JSON.stringify(
         {
           exportDate: new Date().toISOString(),
           version: '1.0',
@@ -57,10 +57,15 @@ export default function SettingsScreen() {
         null,
         2
       );
-      Alert.alert('Export Ready', `${allPlaces.length} places exported. Data copied to clipboard.`);
-      // In a real implementation, use expo-sharing or expo-file-system to save the file
-    } catch {
-      Alert.alert('Export Failed', 'An error occurred while exporting data.');
+      await Share.share({
+        message: jsonString,
+        title: `NearDrop Export — ${allPlaces.length} places`,
+      });
+    } catch (error) {
+      // Share.share throws if user dismisses the share sheet on iOS; not a real error
+      if ((error as Error)?.message !== 'User did not share') {
+        Alert.alert('Export Failed', 'An error occurred while exporting data.');
+      }
     }
   };
 

@@ -9,21 +9,24 @@ export function useLocation() {
 
   useEffect(() => {
     let subscription: Location.LocationSubscription | null = null;
+    let mounted = true;
 
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
+      if (!mounted) return;
       if (status !== 'granted') {
         setError('Location permission denied');
         return;
       }
 
-      subscription = await Location.watchPositionAsync(
+      const sub = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.Balanced,
           timeInterval: 5000,
           distanceInterval: 10,
         },
         (loc) => {
+          if (!mounted) return;
           setLocation(loc);
           setUserLocation({
             latitude: loc.coords.latitude,
@@ -31,12 +34,20 @@ export function useLocation() {
           });
         }
       );
+
+      if (mounted) {
+        subscription = sub;
+      } else {
+        sub.remove(); // Component unmounted while awaiting
+      }
     })();
 
     return () => {
+      mounted = false;
       subscription?.remove();
     };
-  }, [setUserLocation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // setUserLocation is a stable Zustand ref
 
   return { location, error };
 }

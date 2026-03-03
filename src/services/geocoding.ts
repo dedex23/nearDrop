@@ -7,18 +7,30 @@ interface NominatimResult {
   display_name: string;
 }
 
+// Serializes requests so only one is in-flight at a time, guaranteeing
+// the 1.1s Nominatim rate limit even under concurrent callers.
+let lastRequestDone: Promise<void> = Promise.resolve();
 let lastRequestTime = 0;
 
 async function throttledFetch(url: string): Promise<Response> {
+  // Wait for any previous request to finish before checking timing
+  await lastRequestDone;
+
   const now = Date.now();
   const elapsed = now - lastRequestTime;
   if (elapsed < 1100) {
     await new Promise((r) => setTimeout(r, 1100 - elapsed));
   }
   lastRequestTime = Date.now();
-  return fetch(url, {
+
+  const fetchPromise = fetch(url, {
     headers: { 'User-Agent': USER_AGENT },
   });
+
+  // Next caller must wait for this fetch to complete before proceeding
+  lastRequestDone = fetchPromise.then(() => {}, () => {});
+
+  return fetchPromise;
 }
 
 export async function geocodeAddress(

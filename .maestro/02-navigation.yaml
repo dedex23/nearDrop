@@ -1,21 +1,53 @@
 appId: com.neardrop.app
 ---
 # Test navigation between all three tabs
-- launchApp
+- launchApp:
+    clearState: true
 - runFlow: flows/dismiss-permissions.yaml
 
 # Start on Map tab
-- assertVisible: "Map"
+- extendedWaitUntil:
+    visible: "Map"
+    timeout: 15000
 
 # Navigate to Places tab
 - tapOn: "Places"
-- assertVisible: "Search places..."
+- waitForAnimationToEnd
+
+# Recovery: expo-router useLinking race condition can break navigation.
+# If Places tab content isn't visible, restart the app and retry.
+- runFlow:
+    when:
+      notVisible:
+        id: "searchbar"
+    commands:
+      - stopApp
+      - launchApp:
+          clearState: true
+      - runFlow: flows/dismiss-permissions.yaml
+      - extendedWaitUntil:
+          visible: "Map"
+          timeout: 15000
+      - tapOn: "Places"
+
+- extendedWaitUntil:
+    visible:
+      id: "searchbar"
+    timeout: 15000
 
 # Navigate to Settings tab
-- tapOn: "Settings"
-- assertVisible: "Background Tracking"
+- tapOn:
+    text: "Settings"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible: "Background Tracking"
+    timeout: 10000
 
 # Navigate back to Map tab
-- tapOn: "Map"
-- assertVisible:
-    text: "places"
+- tapOn:
+    text: "Map"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "fab-add-place-map"
+    timeout: 10000

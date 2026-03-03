@@ -52,9 +52,19 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   updatePlace: async (id, data) => {
-    await queries.updatePlace(id, data);
-    // Re-fetch to ensure consistency
-    await get().loadPlaces();
+    // Optimistic local update
+    set((s) => ({
+      places: s.places.map((p) =>
+        p.id === id ? { ...p, ...data, updatedAt: new Date() } : p
+      ),
+    }));
+    try {
+      await queries.updatePlace(id, data);
+    } catch (error) {
+      console.error('[NearDrop] Failed to update place:', error);
+      // Rollback: re-fetch from database
+      await get().loadPlaces();
+    }
   },
 
   removePlace: async (id) => {

@@ -1,11 +1,14 @@
 appId: com.neardrop.app
 ---
 # Test Settings screen visibility and toggle interactions
-- launchApp
+- launchApp:
+    clearState: true
 - runFlow: flows/dismiss-permissions.yaml
 
 # Wait for app to fully load
-- assertVisible: "Map"
+- extendedWaitUntil:
+    visible: "Map"
+    timeout: 15000
 
 # Navigate to Settings
 - tapOn: "Settings"
