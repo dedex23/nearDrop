@@ -53,7 +53,7 @@ export default function MapScreen() {
       };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <CategoryChips selected={selectedCategory} onSelect={setSelectedCategory} />
 
       <View style={styles.statusBar}>
