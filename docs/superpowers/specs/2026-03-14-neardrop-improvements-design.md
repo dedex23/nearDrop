@@ -38,6 +38,8 @@ SQLite ne supporte pas `ALTER TABLE ... ADD CONSTRAINT FOREIGN KEY`. La migratio
 
 Si la transaction échoue, tout est rollback et la BDD reste intacte. Cette migration est **manuelle** (fichier SQL écrit à la main) car Drizzle Kit ne gère pas les data migrations complexes.
 
+**Intégration avec Drizzle** : le fichier SQL manuel est placé dans `src/db/migrations/` avec le prochain numéro séquentiel (ex: `0001_categories_migration.sql`) et enregistré dans le journal Drizzle (`meta/_journal.json`). Cela garantit que Drizzle le traite comme une migration normale : exécutée une seule fois, trackée dans `__drizzle_migrations`.
+
 ### Fichiers impactés par le changement Category enum → FK
 
 | Fichier | Nature du changement |
@@ -74,7 +76,7 @@ Si la transaction échoue, tout est rollback et la BDD reste intacte. Cette migr
 ### Thème
 
 - Conserver react-native-paper (Material Design 3) mais mieux exploité
-- **Dark mode** : détection automatique du thème système + toggle manuel dans Settings. Nouveau champ `themeMode: 'system' | 'light' | 'dark'` dans `settings-store.ts`. Le `PaperProvider` reçoit le thème en fonction de cette préférence.
+- **Dark mode** : détection automatique du thème système + toggle manuel dans Settings. Nouveau champ `themeMode: 'system' | 'light' | 'dark'` dans `settings-store.ts` (défaut : `'system'`). Le `PaperProvider` reçoit le thème en fonction de cette préférence.
 - Palette de couleurs plus contrastée, surfaces avec élévation subtile
 - Typographie plus hiérarchisée (titres plus grands, sous-textes plus légers)
 
