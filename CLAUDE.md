@@ -36,7 +36,7 @@ npm run lint           # ESLint via expo lint
 React Native 0.83 + Expo 55 + TypeScript (strict) + Expo Router (file-based routing) + Zustand (state) + Drizzle ORM (SQLite) + react-native-paper (Material Design 3 UI)
 
 ### Source Layout (`src/`)
-- **`app/`** — File-based routes (Expo Router). Tabs: map, places, settings. Place CRUD routes under `place/`. Category management under `categories/`.
+- **`app/`** — File-based routes (Expo Router). Tabs: map, places, settings. Place CRUD routes under `place/`. Category management under `categories/`. Après ajout d'un lieu, redirection vers la carte centrée sur les coordonnées.
 - **`services/`** — Core business logic:
   - `geofencing.ts` — Two-stage proximity check: bounding-box pre-filter then Haversine distance. 24h cooldown per place. Grouped notifications.
   - `location.ts` — Background location via `expo-task-manager` (task: `NEARDROP_BACKGROUND_LOCATION`). Updates every 30s / 50m.
@@ -72,6 +72,11 @@ Settings Store → AsyncStorage (user preferences)
 - **Active hours**: integer-only precision (hour granularity, e.g. 10 = 10:00). Supports overnight ranges (e.g. 22→06). Comparison uses `<` on end hour, so `end: 22` means active until 21:59
 - **Dark mode** : `themeMode` ('system'|'light'|'dark') dans settings-store. Thème injecté via `PaperProvider` dans `_layout.tsx`. Toutes les couleurs doivent utiliser `useTheme()` de react-native-paper — **jamais de couleurs hardcodées** dans les StyleSheets. La carte utilise `customMapStyle` pour le mode sombre. Headers/tab bar configurés dans les layouts.
 - **GestureHandlerRootView** : wrappé au niveau `RootLayout` (`_layout.tsx`). Requis pour `@gorhom/bottom-sheet` et `Swipeable` de react-native-gesture-handler. Ne PAS ajouter de `GestureHandlerRootView` supplémentaire dans les écrans enfants.
+- **@gorhom/bottom-sheet** : toujours monter le BottomSheet avec `index={-1}` (fermé). Ne PAS retourner `null` quand il n'y a pas de données — la ref serait perdue et `snapToIndex` ne fonctionnerait pas.
+- **react-native-map-clustering** : les `Marker` doivent être des enfants **directs** de `ClusteredMapView`. Les wrapper dans `React.Fragment` empêche la détection des markers. Séparer Markers (clusterables) et Circles (rendus indépendamment). Utiliser une `key` basée sur les IDs des lieux pour forcer le re-render quand la liste change.
+- **expo-file-system v18+** : utilise les classes `File`, `Directory`, `Paths` (pas les fonctions `copyAsync`/`deleteAsync` dépréciées). `File.copy()` throw `FileAlreadyExistsException` si la destination existe — supprimer avant de copier.
+- **Geocoding Nominatim** : `geocodeAddress()` accepte un paramètre `nearLocation` pour biaiser via `viewbox`. Toujours passer la position utilisateur depuis le store pour éviter les résultats sur le mauvais continent.
+- **Share intent Instagram** : le OG title contient souvent tout le post. `extractPlaceNameFromOgTitle()` cherche d'abord un 📍 emoji, puis le nom du compte Instagram, puis tronque. La description OG est mise dans les notes.
 
 ## Code Style
 
