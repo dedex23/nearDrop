@@ -1,6 +1,5 @@
 import { Paths, File, Directory } from 'expo-file-system';
-import { db } from '@/db/client';
-import { sql } from 'drizzle-orm';
+import { expoDb } from '@/db/client';
 
 const BACKUP_DIR_NAME = 'backups';
 const MAX_BACKUPS = 3;
@@ -35,7 +34,7 @@ async function performBackup(): Promise<void> {
     ensureBackupDir();
 
     // Flush WAL to main DB file before copying to ensure backup integrity
-    await db.run(sql`PRAGMA wal_checkpoint(FULL)`);
+    expoDb.execSync('PRAGMA wal_checkpoint(FULL)');
 
     const dbFile = new File(Paths.document, 'SQLite', 'neardrop.db');
 
