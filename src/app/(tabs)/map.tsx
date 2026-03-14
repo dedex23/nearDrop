@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { FAB, Badge, Text } from 'react-native-paper';
+import { FAB, Badge, Text, useTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useAppStore } from '@/stores/app-store';
@@ -13,6 +13,7 @@ import type { Place } from '@/types';
 
 export default function MapScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const { location } = useLocation();
   const places = useAppStore((s) => s.places);
   const selectedCategory = useAppStore((s) => s.selectedCategory);
@@ -61,7 +62,7 @@ export default function MapScreen() {
         >
           {isTrackingEnabled ? 'Actif' : 'En pause'}
         </Badge>
-        <Text variant="bodySmall" style={styles.countText}>
+        <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
           {filteredPlaces.length} lieux
         </Text>
       </View>
@@ -76,7 +77,7 @@ export default function MapScreen() {
       <FAB
         testID="fab-add-place-map"
         icon="plus"
-        style={styles.fab}
+        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
         onPress={() => router.push('/place/add' as never)}
       />
 
@@ -109,13 +110,9 @@ const styles = StyleSheet.create({
   badgeInactive: {
     backgroundColor: '#9E9E9E',
   },
-  countText: {
-    color: '#666',
-  },
   fab: {
     position: 'absolute',
     right: 16,
     bottom: 16,
-    backgroundColor: '#6200EE',
   },
 });

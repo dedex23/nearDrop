@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, StyleSheet, Alert } from 'react-native';
-import { List, Switch, Text, Divider, SegmentedButtons } from 'react-native-paper';
+import { List, Switch, Text, Divider, SegmentedButtons, useTheme } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { useRouter } from 'expo-router';
 import { useSettingsStore } from '@/stores/settings-store';
@@ -19,6 +19,7 @@ const COOLDOWN_OPTIONS = [
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const settings = useSettingsStore();
   const loadPlaces = useAppStore((s) => s.loadPlaces);
   const categories = useAppStore((s) => s.categories);
@@ -79,7 +80,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <List.Section>
         <List.Subheader>Suivi de position</List.Subheader>
 
@@ -92,7 +93,7 @@ export default function SettingsScreen() {
               testID="switch-tracking"
               value={settings.isTrackingEnabled}
               onValueChange={handleTrackingToggle}
-              color="#6200EE"
+              color={theme.colors.primary}
             />
           )}
         />
@@ -106,7 +107,7 @@ export default function SettingsScreen() {
               testID="switch-quiet-mode"
               value={settings.isQuietMode}
               onValueChange={(v) => settings.updateSettings({ isQuietMode: v })}
-              color="#6200EE"
+              color={theme.colors.primary}
             />
           )}
         />
@@ -129,9 +130,9 @@ export default function SettingsScreen() {
             minimumValue={50}
             maximumValue={500}
             step={10}
-            minimumTrackTintColor="#6200EE"
-            maximumTrackTintColor="#E0E0E0"
-            thumbTintColor="#6200EE"
+            minimumTrackTintColor={theme.colors.primary}
+            maximumTrackTintColor={theme.colors.surfaceVariant}
+            thumbTintColor={theme.colors.primary}
             style={styles.slider}
           />
         </View>
@@ -146,9 +147,9 @@ export default function SettingsScreen() {
             minimumValue={0}
             maximumValue={COOLDOWN_OPTIONS.length - 1}
             step={1}
-            minimumTrackTintColor="#6200EE"
-            maximumTrackTintColor="#E0E0E0"
-            thumbTintColor="#6200EE"
+            minimumTrackTintColor={theme.colors.primary}
+            maximumTrackTintColor={theme.colors.surfaceVariant}
+            thumbTintColor={theme.colors.primary}
             style={styles.slider}
           />
         </View>
@@ -171,9 +172,9 @@ export default function SettingsScreen() {
             minimumValue={0}
             maximumValue={23}
             step={1}
-            minimumTrackTintColor="#6200EE"
-            maximumTrackTintColor="#E0E0E0"
-            thumbTintColor="#6200EE"
+            minimumTrackTintColor={theme.colors.primary}
+            maximumTrackTintColor={theme.colors.surfaceVariant}
+            thumbTintColor={theme.colors.primary}
             style={styles.slider}
           />
         </View>
@@ -190,9 +191,9 @@ export default function SettingsScreen() {
             minimumValue={0}
             maximumValue={23}
             step={1}
-            minimumTrackTintColor="#6200EE"
-            maximumTrackTintColor="#E0E0E0"
-            thumbTintColor="#6200EE"
+            minimumTrackTintColor={theme.colors.primary}
+            maximumTrackTintColor={theme.colors.surfaceVariant}
+            thumbTintColor={theme.colors.primary}
             style={styles.slider}
           />
         </View>
@@ -264,7 +265,6 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
   },
   sliderSection: {
     paddingHorizontal: 16,

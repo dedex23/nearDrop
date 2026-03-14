@@ -1,6 +1,6 @@
 import { useMemo, useCallback, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
-import { Card, Chip, Text, IconButton } from 'react-native-paper';
+import { Card, Chip, Text, IconButton, useTheme } from 'react-native-paper';
 import { Swipeable } from 'react-native-gesture-handler';
 import type { Place } from '@/types';
 import { haversineDistance, formatDistance } from '@/utils/distance';
@@ -14,6 +14,7 @@ interface PlaceCardProps {
 }
 
 export function PlaceCard({ place, onPress, onDelete, onToggleActive }: PlaceCardProps) {
+  const theme = useTheme();
   const userLocation = useAppStore((s) => s.userLocation);
   const categories = useAppStore((s) => s.categories);
   const swipeableRef = useRef<Swipeable>(null);
@@ -101,11 +102,11 @@ export function PlaceCard({ place, onPress, onDelete, onToggleActive }: PlaceCar
           <Text variant="titleMedium" numberOfLines={1}>
             {place.name}
           </Text>
-          <Text variant="bodySmall" numberOfLines={1} style={styles.address}>
+          <Text variant="bodySmall" numberOfLines={1} style={{ color: theme.colors.onSurfaceVariant, marginTop: 2 }}>
             {place.address}
           </Text>
           {place.notes ? (
-            <Text variant="bodySmall" numberOfLines={2} style={styles.notes}>
+            <Text variant="bodySmall" numberOfLines={2} style={{ color: theme.colors.onSurfaceVariant, marginTop: 4, fontStyle: 'italic' }}>
               {place.notes}
             </Text>
           ) : null}
@@ -119,12 +120,12 @@ export function PlaceCard({ place, onPress, onDelete, onToggleActive }: PlaceCar
               {category?.name ?? ''}
             </Chip>
             {distance !== null && (
-              <Text variant="bodySmall" style={styles.distance}>
+              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
                 {formatDistance(distance)}
               </Text>
             )}
             {place.notifiedAt && (
-              <Chip compact icon="check" style={styles.visitedChip} textStyle={{ fontSize: 11 }}>
+              <Chip compact icon="check" style={[styles.visitedChip, { backgroundColor: theme.colors.secondaryContainer }]} textStyle={{ fontSize: 11 }}>
                 Visité
               </Chip>
             )}
@@ -148,15 +149,6 @@ const styles = StyleSheet.create({
   inactive: {
     opacity: 0.6,
   },
-  address: {
-    color: '#666',
-    marginTop: 2,
-  },
-  notes: {
-    color: '#888',
-    marginTop: 4,
-    fontStyle: 'italic',
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -169,10 +161,6 @@ const styles = StyleSheet.create({
   },
   visitedChip: {
     height: 28,
-    backgroundColor: '#E8F5E9',
-  },
-  distance: {
-    color: '#888',
   },
   inactiveLabel: {
     color: '#E65100',

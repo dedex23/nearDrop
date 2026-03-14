@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
 import { View, FlatList, StyleSheet, Alert } from 'react-native';
-import { Searchbar, FAB, SegmentedButtons, Text } from 'react-native-paper';
+import { Searchbar, FAB, SegmentedButtons, Text, useTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useAppStore } from '@/stores/app-store';
 import { PlaceCard } from '@/components/place-card';
@@ -9,6 +9,7 @@ import type { Place } from '@/types';
 
 export default function PlacesScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const {
     places,
     searchQuery,
@@ -97,7 +98,7 @@ export default function PlacesScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Searchbar
         testID="searchbar"
         placeholder="Rechercher un lieu..."
@@ -128,10 +129,10 @@ export default function PlacesScreen() {
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text variant="bodyLarge" style={styles.emptyText}>
+            <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
               Aucun lieu
             </Text>
-            <Text variant="bodySmall" style={styles.emptySubtext}>
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 4 }}>
               Appuyez sur + pour ajouter votre premier lieu
             </Text>
           </View>
@@ -141,7 +142,7 @@ export default function PlacesScreen() {
       <FAB
         testID="fab-add-place"
         icon="plus"
-        style={styles.fab}
+        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
         onPress={() => router.push('/place/add' as never)}
       />
     </View>
@@ -151,7 +152,6 @@ export default function PlacesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
   },
   searchbar: {
     margin: 12,
@@ -168,17 +168,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 60,
   },
-  emptyText: {
-    color: '#666',
-  },
-  emptySubtext: {
-    color: '#999',
-    marginTop: 4,
-  },
   fab: {
     position: 'absolute',
     right: 16,
     bottom: 16,
-    backgroundColor: '#6200EE',
   },
 });

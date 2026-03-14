@@ -1,6 +1,6 @@
 import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
-import { Chip } from 'react-native-paper';
+import { Chip, useTheme } from 'react-native-paper';
 import { useAppStore } from '@/stores/app-store';
 
 interface CategoryChipsProps {
@@ -9,6 +9,7 @@ interface CategoryChipsProps {
 }
 
 export function CategoryChips({ selected, onSelect }: CategoryChipsProps) {
+  const theme = useTheme();
   const categories = useAppStore((s) => s.categories);
 
   return (
@@ -26,7 +27,7 @@ export function CategoryChips({ selected, onSelect }: CategoryChipsProps) {
             icon={cat.icon}
             selected={isSelected}
             onPress={() => onSelect(isSelected ? null : cat.id)}
-            style={[styles.chip, { backgroundColor: isSelected ? cat.color + '20' : '#F0F0F0' }]}
+            style={[styles.chip, { backgroundColor: isSelected ? cat.color + '20' : theme.colors.surfaceVariant }]}
             textStyle={isSelected ? { color: cat.color } : undefined}
           >
             {cat.name}
@@ -43,6 +44,7 @@ interface CategoryPickerProps {
 }
 
 export function CategoryPicker({ value, onChange }: CategoryPickerProps) {
+  const theme = useTheme();
   const categories = useAppStore((s) => s.categories);
 
   return (
@@ -55,7 +57,7 @@ export function CategoryPicker({ value, onChange }: CategoryPickerProps) {
             icon={cat.icon}
             selected={isSelected}
             onPress={() => onChange(cat.id)}
-            style={[styles.chip, { backgroundColor: isSelected ? cat.color + '30' : '#F0F0F0' }]}
+            style={[styles.chip, { backgroundColor: isSelected ? cat.color + '30' : theme.colors.surfaceVariant }]}
             textStyle={isSelected ? { color: cat.color, fontWeight: '600' } : undefined}
           >
             {cat.name}
