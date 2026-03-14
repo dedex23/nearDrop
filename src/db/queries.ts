@@ -1,11 +1,12 @@
-import { eq, like, desc, or } from 'drizzle-orm';
+import { eq, like, desc, or, asc, sql } from 'drizzle-orm';
 import { randomUUID } from 'expo-crypto';
 import { db } from './client';
-import { places } from './schema';
-import { CATEGORIES, SOURCE_TYPES } from '@/types';
-import type { Place, PlaceInsert, Category, SourceType } from '@/types';
+import { places, categories } from './schema';
+import { SOURCE_TYPES } from '@/types';
+import type { Place, PlaceInsert, Category, CategoryInsert, SourceType } from '@/types';
 
 type PlaceRow = typeof places.$inferSelect;
+type CategoryRow = typeof categories.$inferSelect;
 
 function safeParseTags(raw: string): string[] {
   try {
@@ -20,14 +21,81 @@ function rowToPlace(row: PlaceRow): Place {
   return {
     ...row,
     tags: safeParseTags(row.tags),
-    category: (CATEGORIES as readonly string[]).includes(row.category)
-      ? (row.category as Category)
-      : 'other',
     sourceType: (SOURCE_TYPES as readonly string[]).includes(row.sourceType)
       ? (row.sourceType as SourceType)
       : 'manual',
   };
 }
+
+function rowToCategory(row: CategoryRow): Category {
+  return {
+    id: row.id,
+    name: row.name,
+    color: row.color,
+    icon: row.icon,
+    sortOrder: row.sortOrder,
+    createdAt: row.createdAt,
+  };
+}
+
+// ── Category queries ──────────────────────────────────────────────────
+
+export async function getAllCategories(): Promise<Category[]> {
+  const rows = await db.select().from(categories).orderBy(asc(categories.sortOrder));
+  return rows.map(rowToCategory);
+}
+
+export async function getCategoryById(id: string): Promise<Category | null> {
+  const rows = await db.select().from(categories).where(eq(categories.id, id)).limit(1);
+  return rows.length > 0 ? rowToCategory(rows[0]) : null;
+}
+
+export async function insertCategory(data: CategoryInsert): Promise<Category> {
+  const id = data.id || randomUUID();
+  const createdAt = data.createdAt || new Date();
+  const row = {
+    id,
+    name: data.name,
+    color: data.color,
+    icon: data.icon,
+    sortOrder: data.sortOrder,
+    createdAt,
+  };
+  await db.insert(categories).values(row);
+  return { ...row };
+}
+
+export async function updateCategory(
+  id: string,
+  data: Partial<Omit<CategoryInsert, 'id' | 'createdAt'>>
+): Promise<void> {
+  await db.update(categories).set(data).where(eq(categories.id, id));
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  await db.delete(categories).where(eq(categories.id, id));
+}
+
+export async function countPlacesByCategory(categoryId: string): Promise<number> {
+  const result = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(places)
+    .where(eq(places.categoryId, categoryId));
+  return result[0]?.count ?? 0;
+}
+
+export async function reorderCategories(orderedIds: string[]): Promise<void> {
+  await db.transaction(async (tx) => {
+    for (let i = 0; i < orderedIds.length; i++) {
+      await tx
+        .update(categories)
+        .set({ sortOrder: i })
+        .where(eq(categories.id, orderedIds[i]));
+    }
+  });
+}
+
+// ── Place queries ─────────────────────────────────────────────────────
 
 export async function getAllPlaces(): Promise<Place[]> {
   const rows = await db.select().from(places).orderBy(desc(places.createdAt));
