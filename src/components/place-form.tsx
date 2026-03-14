@@ -4,7 +4,7 @@ import { TextInput, Button, Text, HelperText } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { CategoryPicker } from './category-chip';
 import { geocodeAddress } from '@/services/geocoding';
-import type { Category, PlaceInsert } from '@/types';
+import type { PlaceInsert } from '@/types';
 
 interface PlaceFormProps {
   initialValues?: Partial<PlaceInsert>;
@@ -15,7 +15,7 @@ interface PlaceFormProps {
 export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Enregistrer' }: PlaceFormProps) {
   const [name, setName] = useState(initialValues?.name ?? '');
   const [address, setAddress] = useState(initialValues?.address ?? '');
-  const [category, setCategory] = useState<Category>(initialValues?.category ?? 'other');
+  const [categoryId, setCategoryId] = useState(initialValues?.categoryId ?? 'cat-other');
   const [tags, setTags] = useState(initialValues?.tags?.join(', ') ?? '');
   const [notes, setNotes] = useState(initialValues?.notes ?? '');
   const [radius, setRadius] = useState(initialValues?.radius ?? 150);
@@ -73,7 +73,7 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Enregistrer'
       await onSubmit({
         name: name.trim(),
         address: address.trim(),
-        category,
+        categoryId,
         tags: tags
           .split(',')
           .map((t) => t.trim())
@@ -138,7 +138,7 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Enregistrer'
       <Text variant="labelLarge" style={styles.sectionLabel}>
         Catégorie
       </Text>
-      <CategoryPicker value={category} onChange={setCategory} />
+      <CategoryPicker value={categoryId} onChange={setCategoryId} />
 
       <TextInput
         testID="input-tags"
