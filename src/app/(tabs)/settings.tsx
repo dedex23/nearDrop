@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, StyleSheet, Alert, Share } from 'react-native';
+import { View, ScrollView, StyleSheet, Alert } from 'react-native';
 import { List, Switch, Text, Divider, SegmentedButtons } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { useRouter } from 'expo-router';
@@ -7,7 +7,6 @@ import { useSettingsStore } from '@/stores/settings-store';
 import { useAppStore } from '@/stores/app-store';
 import { startBackgroundLocation, stopBackgroundLocation } from '@/services/location';
 import { getLastBackupDate, getBackupList, restoreBackup } from '@/services/backup';
-import * as queries from '@/db/queries';
 import type { ThemeMode } from '@/types';
 
 const COOLDOWN_OPTIONS = [
@@ -21,7 +20,6 @@ const COOLDOWN_OPTIONS = [
 export default function SettingsScreen() {
   const router = useRouter();
   const settings = useSettingsStore();
-  const places = useAppStore((s) => s.places);
   const loadPlaces = useAppStore((s) => s.loadPlaces);
   const categories = useAppStore((s) => s.categories);
   const [lastBackup, setLastBackup] = useState<Date | null>(null);
@@ -78,30 +76,6 @@ export default function SettingsScreen() {
     const index = Math.round(value);
     setCooldownIndex(index);
     settings.updateSettings({ cooldownHours: COOLDOWN_OPTIONS[index].value });
-  };
-
-  const handleExport = async () => {
-    try {
-      const allPlaces = await queries.getAllPlaces();
-      const jsonString = JSON.stringify(
-        {
-          exportDate: new Date().toISOString(),
-          version: '1.0',
-          places: allPlaces,
-        },
-        null,
-        2
-      );
-      await Share.share({
-        message: jsonString,
-        title: `NearDrop Export — ${allPlaces.length} lieux`,
-      });
-    } catch (error) {
-      // Share.share throws if user dismisses the share sheet on iOS; not a real error
-      if ((error as Error)?.message !== 'User did not share') {
-        Alert.alert('Échec de l\'export', 'Une erreur est survenue lors de l\'export des données.');
-      }
-    }
   };
 
   return (
@@ -271,21 +245,6 @@ export default function SettingsScreen() {
           onPress={handleRestore}
         />
 
-        <List.Item
-          title="Exporter les données"
-          description={`Exporter les ${places.length} lieux en JSON`}
-          left={(props) => <List.Icon {...props} icon="export" />}
-          onPress={handleExport}
-        />
-
-        <List.Item
-          title="Importer des données"
-          description="Importer des lieux depuis un fichier"
-          left={(props) => <List.Icon {...props} icon="import" />}
-          onPress={() => {
-            // Navigate to import screen (Phase 3)
-          }}
-        />
       </List.Section>
 
       <Divider />

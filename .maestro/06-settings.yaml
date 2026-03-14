@@ -32,12 +32,6 @@ appId: com.neardrop.app
     direction: UP
     duration: 500
 
-- scrollUntilVisible:
-    element: "Exporter les données"
-    direction: DOWN
-
-- assertVisible: "Exporter les données"
-
 # Scroll to About
 - scrollUntilVisible:
     element: "NearDrop"
