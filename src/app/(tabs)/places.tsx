@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback } from 'react';
-import { View, FlatList, StyleSheet } from 'react-native';
+import { View, FlatList, StyleSheet, Alert } from 'react-native';
 import { Searchbar, FAB, SegmentedButtons, Text } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useAppStore } from '@/stores/app-store';
@@ -19,6 +19,8 @@ export default function PlacesScreen() {
     setSortBy,
     isLoading,
     loadPlaces,
+    updatePlace,
+    removePlace,
     categories,
   } = useAppStore();
 
@@ -58,11 +60,41 @@ export default function PlacesScreen() {
     });
   }, [places, searchQuery, selectedCategory, sortBy, categories]);
 
+  const handleDelete = useCallback(
+    (place: Place) => {
+      Alert.alert(
+        'Supprimer le lieu',
+        `Voulez-vous vraiment supprimer "${place.name}" ?`,
+        [
+          { text: 'Annuler', style: 'cancel' },
+          {
+            text: 'Supprimer',
+            style: 'destructive',
+            onPress: () => removePlace(place.id),
+          },
+        ]
+      );
+    },
+    [removePlace]
+  );
+
+  const handleToggleActive = useCallback(
+    (id: string, active: boolean) => {
+      updatePlace(id, { isActive: active });
+    },
+    [updatePlace]
+  );
+
   const renderItem = useCallback(
     ({ item }: { item: Place }) => (
-      <PlaceCard place={item} onPress={() => router.push(`/place/${item.id}` as never)} />
+      <PlaceCard
+        place={item}
+        onPress={() => router.push(`/place/${item.id}` as never)}
+        onDelete={() => handleDelete(item)}
+        onToggleActive={(active) => handleToggleActive(item.id, active)}
+      />
     ),
-    [router]
+    [router, handleDelete, handleToggleActive]
   );
 
   return (
