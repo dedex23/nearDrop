@@ -20,6 +20,7 @@ SplashScreen.preventAutoHideAsync();
 function RootLayoutInner() {
   const { isReady, error } = useDatabase();
   const loadPlaces = useAppStore((s) => s.loadPlaces);
+  const loadCategories = useAppStore((s) => s.loadCategories);
   const isTrackingEnabled = useSettingsStore((s) => s.isTrackingEnabled);
   const [hydrated, setHydrated] = useState(useSettingsStore.persist.hasHydrated());
   const router = useRouter();
@@ -32,12 +33,13 @@ function RootLayoutInner() {
     (async () => {
       try {
         await setupNotifications();
+        await loadCategories();
         await loadPlaces();
       } finally {
         SplashScreen.hideAsync();
       }
     })();
-  }, [isReady, loadPlaces]);
+  }, [isReady, loadCategories, loadPlaces]);
 
   // Wait for settings store hydration before acting on persisted values
   useEffect(() => {
