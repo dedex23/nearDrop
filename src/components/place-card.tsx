@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 import { Card, Chip, Text } from 'react-native-paper';
 import type { Place } from '@/types';
-import { CATEGORY_CONFIG } from '@/utils/constants';
 import { haversineDistance, formatDistance } from '@/utils/distance';
 import { useAppStore } from '@/stores/app-store';
 
@@ -13,7 +12,12 @@ interface PlaceCardProps {
 
 export function PlaceCard({ place, onPress }: PlaceCardProps) {
   const userLocation = useAppStore((s) => s.userLocation);
-  const config = CATEGORY_CONFIG[place.category];
+  const categories = useAppStore((s) => s.categories);
+
+  const category = useMemo(
+    () => categories.find((c) => c.id === place.categoryId),
+    [categories, place.categoryId]
+  );
 
   const distance = useMemo(
     () =>
@@ -37,14 +41,19 @@ export function PlaceCard({ place, onPress }: PlaceCardProps) {
         <Text variant="bodySmall" numberOfLines={1} style={styles.address}>
           {place.address}
         </Text>
+        {place.notes ? (
+          <Text variant="bodySmall" numberOfLines={2} style={styles.notes}>
+            {place.notes}
+          </Text>
+        ) : null}
         <Card.Content style={styles.row}>
           <Chip
-            icon={config.icon}
+            icon={category?.icon ?? 'map-marker'}
             compact
-            style={[styles.categoryChip, { backgroundColor: config.color + '20' }]}
-            textStyle={{ color: config.color, fontSize: 12 }}
+            style={[styles.categoryChip, { backgroundColor: (category?.color ?? '#757575') + '20' }]}
+            textStyle={{ color: category?.color ?? '#757575', fontSize: 12 }}
           >
-            {config.label}
+            {category?.name ?? ''}
           </Chip>
           {distance !== null && (
             <Text variant="bodySmall" style={styles.distance}>
@@ -78,6 +87,11 @@ const styles = StyleSheet.create({
   address: {
     color: '#666',
     marginTop: 2,
+  },
+  notes: {
+    color: '#888',
+    marginTop: 4,
+    fontStyle: 'italic',
   },
   row: {
     flexDirection: 'row',
