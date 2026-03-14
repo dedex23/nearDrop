@@ -44,10 +44,10 @@ export default function MapScreen() {
         <Badge
           style={[styles.badge, isTrackingEnabled ? styles.badgeActive : styles.badgeInactive]}
         >
-          {isTrackingEnabled ? 'Tracking' : 'Paused'}
+          {isTrackingEnabled ? 'Actif' : 'En pause'}
         </Badge>
         <Text variant="bodySmall" style={styles.countText}>
-          {filteredPlaces.length} places
+          {filteredPlaces.length} lieux
         </Text>
       </View>
 

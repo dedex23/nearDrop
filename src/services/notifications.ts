@@ -34,7 +34,7 @@ export async function setupNotifications(): Promise<boolean> {
   // Create Android notification channel (required on Android 8+)
   // HIGH importance enables sound + heads-up by default — no explicit sound needed
   await Notifications.setNotificationChannelAsync('proximity-v2', {
-    name: 'Proximity Alerts',
+    name: 'Alertes de proximité',
     importance: Notifications.AndroidImportance.HIGH,
     vibrationPattern: [0, 250, 250, 250],
     lightColor: '#6200EE',
@@ -54,7 +54,7 @@ export async function sendProximityNotification(
   await Notifications.scheduleNotificationAsync({
     identifier: `proximity-${place.id}`,
     content: {
-      title: `Near: ${place.name}`,
+      title: `À proximité : ${place.name}`,
       body: `${place.category} — ${place.address}${distanceText}`,
       data: { placeId: place.id },
     },
@@ -76,7 +76,7 @@ export async function sendGroupedNotification(places: Place[]): Promise<void> {
   await Notifications.scheduleNotificationAsync({
     identifier: `proximity-group-${groupId}`,
     content: {
-      title: `${places.length} places nearby`,
+      title: `${places.length} lieux à proximité`,
       body: names,
       data: { placeIds: places.map((p) => p.id) },
     },

@@ -65,7 +65,7 @@ export default function PlacesScreen() {
     <View style={styles.container}>
       <Searchbar
         testID="searchbar"
-        placeholder="Search places..."
+        placeholder="Rechercher un lieu..."
         value={searchQuery}
         onChangeText={setSearchQuery}
         style={styles.searchbar}
@@ -77,9 +77,9 @@ export default function PlacesScreen() {
         value={sortBy}
         onValueChange={(v) => setSortBy(v as 'date' | 'name' | 'category')}
         buttons={[
-          { value: 'date', label: 'Recent' },
-          { value: 'name', label: 'Name' },
-          { value: 'category', label: 'Category' },
+          { value: 'date', label: 'Récent' },
+          { value: 'name', label: 'Nom' },
+          { value: 'category', label: 'Catégorie' },
         ]}
         style={styles.sortButtons}
       />
@@ -94,10 +94,10 @@ export default function PlacesScreen() {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text variant="bodyLarge" style={styles.emptyText}>
-              No places yet
+              Aucun lieu
             </Text>
             <Text variant="bodySmall" style={styles.emptySubtext}>
-              Tap + to add your first place
+              Appuyez sur + pour ajouter votre premier lieu
             </Text>
           </View>
         }

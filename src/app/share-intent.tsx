@@ -82,10 +82,10 @@ export default function ShareIntentScreen() {
   if (isParsing) {
     return (
       <>
-        <Stack.Screen options={{ title: 'Shared Place' }} />
+        <Stack.Screen options={{ title: 'Lieu partagé' }} />
         <View style={styles.loading}>
           <ActivityIndicator size="large" color="#6200EE" />
-          <Text style={styles.loadingText}>Analyzing shared content...</Text>
+          <Text style={styles.loadingText}>Analyse du contenu partagé...</Text>
         </View>
       </>
     );
@@ -95,10 +95,10 @@ export default function ShareIntentScreen() {
     <>
       <Stack.Screen
         options={{
-          title: 'Add Shared Place',
+          title: 'Ajouter un lieu partagé',
           headerLeft: () => (
             <Text onPress={handleCancel} style={styles.cancelButton}>
-              Cancel
+              Annuler
             </Text>
           ),
         }}
@@ -107,7 +107,7 @@ export default function ShareIntentScreen() {
         key={initialValues ? 'filled' : 'empty'}
         initialValues={initialValues ?? { radius: defaultRadius }}
         onSubmit={handleSubmit}
-        submitLabel="Save Place"
+        submitLabel="Enregistrer le lieu"
       />
     </>
   );

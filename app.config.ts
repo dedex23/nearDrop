@@ -50,7 +50,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-location',
       {
         locationAlwaysAndWhenInUsePermission:
-          'Allow NearDrop to use your location to notify you when you are near saved places.',
+          'Autorisez NearDrop à utiliser votre position pour vous notifier lorsque vous êtes à proximité de vos lieux sauvegardés.',
         isAndroidBackgroundLocationEnabled: true,
         isAndroidForegroundServiceEnabled: true,
       },

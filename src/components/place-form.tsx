@@ -12,7 +12,7 @@ interface PlaceFormProps {
   submitLabel?: string;
 }
 
-export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Save' }: PlaceFormProps) {
+export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Enregistrer' }: PlaceFormProps) {
   const [name, setName] = useState(initialValues?.name ?? '');
   const [address, setAddress] = useState(initialValues?.address ?? '');
   const [category, setCategory] = useState<Category>(initialValues?.category ?? 'other');
@@ -40,15 +40,15 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Save' }: Pla
       setLongitude(result.longitude);
       setHasCoordinates(true);
     } else {
-      setGeocodeError('Address not found. Try a more specific address.');
+      setGeocodeError('Adresse introuvable. Essayez une adresse plus précise.');
     }
     setIsGeocoding(false);
   };
 
   const validate = (): boolean => {
     const newErrors: { name?: string; address?: string } = {};
-    if (!name.trim()) newErrors.name = 'Name is required';
-    if (!address.trim()) newErrors.address = 'Address is required';
+    if (!name.trim()) newErrors.name = 'Le nom est requis';
+    if (!address.trim()) newErrors.address = 'L\'adresse est requise';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -96,7 +96,7 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Save' }: Pla
     <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       <TextInput
         testID="input-name"
-        label="Name *"
+        label="Nom *"
         value={name}
         onChangeText={setName}
         mode="outlined"
@@ -108,7 +108,7 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Save' }: Pla
       <View style={styles.addressRow}>
         <TextInput
           testID="input-address"
-          label="Address *"
+          label="Adresse *"
           value={address}
           onChangeText={setAddress}
           mode="outlined"
@@ -124,30 +124,30 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Save' }: Pla
           style={styles.geocodeButton}
           compact
         >
-          Geocode
+          Géocoder
         </Button>
       </View>
       {errors.address && <HelperText type="error">{errors.address}</HelperText>}
       {geocodeError && <HelperText type="error">{geocodeError}</HelperText>}
       {hasCoordinates && (
         <HelperText type="info">
-          Coordinates: {latitude.toFixed(5)}, {longitude.toFixed(5)}
+          Coordonnées : {latitude.toFixed(5)}, {longitude.toFixed(5)}
         </HelperText>
       )}
 
       <Text variant="labelLarge" style={styles.sectionLabel}>
-        Category
+        Catégorie
       </Text>
       <CategoryPicker value={category} onChange={setCategory} />
 
       <TextInput
         testID="input-tags"
-        label="Tags (comma-separated)"
+        label="Tags (séparés par des virgules)"
         value={tags}
         onChangeText={setTags}
         mode="outlined"
         style={styles.input}
-        placeholder="e.g. brunch, terrace, date night"
+        placeholder="ex. brunch, terrasse, rendez-vous"
       />
 
       <TextInput
@@ -162,7 +162,7 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Save' }: Pla
       />
 
       <Text variant="labelLarge" style={styles.sectionLabel}>
-        Notification radius: {radius}m
+        Rayon de notification : {radius}m
       </Text>
       <Slider
         value={radius}

@@ -4,10 +4,10 @@ export const CATEGORY_CONFIG: Record<Category, { color: string; icon: string; la
   restaurant: { color: '#E53935', icon: 'silverware-fork-knife', label: 'Restaurant' },
   bar: { color: '#8E24AA', icon: 'glass-cocktail', label: 'Bar' },
   cafe: { color: '#795548', icon: 'coffee', label: 'Café' },
-  shop: { color: '#1E88E5', icon: 'shopping', label: 'Shop' },
+  shop: { color: '#1E88E5', icon: 'shopping', label: 'Boutique' },
   culture: { color: '#FB8C00', icon: 'palette', label: 'Culture' },
   sport: { color: '#43A047', icon: 'run', label: 'Sport' },
-  other: { color: '#757575', icon: 'map-marker', label: 'Other' },
+  other: { color: '#757575', icon: 'map-marker', label: 'Autre' },
 };
 
 export const SURVEILLANCE_RADIUS_M = 5000; // 5km active surveillance zone

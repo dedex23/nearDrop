@@ -14,7 +14,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="map"
         options={{
-          title: 'Map',
+          title: 'Carte',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="map" size={size} color={color} />
           ),
@@ -23,7 +23,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="places"
         options={{
-          title: 'Places',
+          title: 'Lieux',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="format-list-bulleted" size={size} color={color} />
           ),
@@ -32,7 +32,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          title: 'Paramètres',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="cog" size={size} color={color} />
           ),

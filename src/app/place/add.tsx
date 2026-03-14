@@ -17,11 +17,11 @@ export default function AddPlaceScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Add Place' }} />
+      <Stack.Screen options={{ title: 'Ajouter un lieu' }} />
       <PlaceForm
         initialValues={{ radius: defaultRadius }}
         onSubmit={handleSubmit}
-        submitLabel="Add Place"
+        submitLabel="Ajouter le lieu"
       />
     </>
   );
