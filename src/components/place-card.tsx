@@ -158,9 +158,11 @@ const styles = StyleSheet.create({
   },
   categoryChip: {
     height: 28,
+    justifyContent: 'center',
   },
   visitedChip: {
     height: 28,
+    justifyContent: 'center',
   },
   inactiveLabel: {
     color: '#E65100',
