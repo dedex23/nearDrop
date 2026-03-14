@@ -59,7 +59,7 @@ export default function SettingsScreen() {
         }
       },
     }));
-    buttons.push({ text: 'Annuler', onPress: async () => {} });
+    buttons.unshift({ text: 'Annuler', onPress: async () => {}, style: 'cancel' } as any);
 
     Alert.alert('Restaurer une sauvegarde', 'Choisissez une sauvegarde :', buttons);
   };
