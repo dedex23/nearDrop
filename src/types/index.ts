@@ -1,13 +1,16 @@
-export const CATEGORIES = [
-  'restaurant',
-  'bar',
-  'cafe',
-  'shop',
-  'culture',
-  'sport',
-  'other',
-] as const;
-export type Category = (typeof CATEGORIES)[number];
+export interface Category {
+  id: string;
+  name: string;
+  color: string;
+  icon: string;
+  sortOrder: number;
+  createdAt: Date;
+}
+
+export type CategoryInsert = Omit<Category, 'id' | 'createdAt'> & {
+  id?: string;
+  createdAt?: Date;
+};
 
 export const SOURCE_TYPES = [
   'manual',
@@ -25,7 +28,7 @@ export interface Place {
   address: string;
   latitude: number;
   longitude: number;
-  category: Category;
+  categoryId: string;
   tags: string[];
   notes: string;
   sourceType: SourceType;
@@ -42,6 +45,8 @@ export type PlaceInsert = Omit<Place, 'id' | 'createdAt' | 'updatedAt' | 'notifi
   id?: string;
 };
 
+export type ThemeMode = 'system' | 'light' | 'dark';
+
 export interface Settings {
   defaultRadius: number;
   cooldownHours: number;
@@ -49,6 +54,7 @@ export interface Settings {
   activeHoursEnd: number;
   isQuietMode: boolean;
   isTrackingEnabled: boolean;
+  themeMode: ThemeMode;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -58,4 +64,7 @@ export const DEFAULT_SETTINGS: Settings = {
   activeHoursEnd: 22,
   isQuietMode: false,
   isTrackingEnabled: false,
+  themeMode: 'system',
 };
+
+export const MAX_CATEGORIES = 30;
