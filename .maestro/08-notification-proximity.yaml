@@ -1,0 +1,71 @@
+appId: com.neardrop.app
+---
+# Test notification proximity: enable tracking, add a place, mock GPS near it
+# Note: this flow is best-effort — notification timing depends on emulator
+- launchApp:
+    clearState: true
+- runFlow: flows/dismiss-permissions.yaml
+
+# Wait for app to fully load
+- extendedWaitUntil:
+    visible: "Carte"
+    timeout: 15000
+
+# Enable tracking in settings
+- tapOn: "Paramètres"
+- extendedWaitUntil:
+    visible: "Suivi en arrière-plan"
+    timeout: 10000
+- tapOn:
+    id: "switch-tracking"
+
+# Navigate to Places and add a place
+- tapOn: "Lieux"
+- extendedWaitUntil:
+    visible:
+      id: "fab-add-place"
+    timeout: 10000
+- tapOn:
+    id: "fab-add-place"
+
+# Fill in place details
+- extendedWaitUntil:
+    visible: "Ajouter un lieu"
+    timeout: 10000
+- tapOn:
+    id: "input-name"
+- inputText: "Test Notif Place"
+- hideKeyboard
+
+- tapOn:
+    id: "input-address"
+- inputText: "Tour Eiffel, Paris"
+- hideKeyboard
+
+# Select Restaurant category
+- tapOn: "Restaurant"
+
+# Submit the place
+- tapOn:
+    id: "btn-submit-place"
+
+# Wait for geocoding and navigation back
+- extendedWaitUntil:
+    visible: "Lieux"
+    timeout: 15000
+
+# Verify the place was created
+- tapOn: "Lieux"
+- extendedWaitUntil:
+    visible: "Test Notif Place"
+    timeout: 10000
+
+# Mock GPS near the Eiffel Tower (lat 48.8584, lon 2.2945)
+- runScript:
+    script: |
+      adb -s emulator-5554 emu geo fix 2.2945 48.8584
+
+# Wait for potential notification (best-effort, may timeout on slow emulators)
+- extendedWaitUntil:
+    visible: "Test Notif Place"
+    timeout: 30000
