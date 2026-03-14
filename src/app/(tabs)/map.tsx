@@ -19,7 +19,7 @@ export default function MapScreen() {
 
   const filteredPlaces = useMemo(() => {
     if (!selectedCategory) return places;
-    return places.filter((p) => p.category === selectedCategory);
+    return places.filter((p) => p.categoryId === selectedCategory);
   }, [places, selectedCategory]);
 
   const initialRegion = location
