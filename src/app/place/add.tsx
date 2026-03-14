@@ -1,4 +1,3 @@
-import React from 'react';
 import { useRouter, Stack } from 'expo-router';
 import { PlaceForm } from '@/components/place-form';
 import { useAppStore } from '@/stores/app-store';

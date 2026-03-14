@@ -74,6 +74,14 @@ export async function countPlacesByCategory(categoryId: string): Promise<number>
   return result[0]?.count ?? 0;
 }
 
+export async function countPlacesByAllCategories(): Promise<Record<string, number>> {
+  const rows = await db
+    .select({ categoryId: places.categoryId, count: sql<number>`count(*)` })
+    .from(places)
+    .groupBy(places.categoryId);
+  return Object.fromEntries(rows.map((r) => [r.categoryId, r.count]));
+}
+
 export async function reorderCategories(orderedIds: string[]): Promise<void> {
   await db.transaction(async (tx) => {
     for (let i = 0; i < orderedIds.length; i++) {

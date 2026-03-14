@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useRef } from 'react';
+import React, { useMemo, useCallback, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { Card, Chip, Text, IconButton, useTheme } from 'react-native-paper';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -13,7 +13,7 @@ interface PlaceCardProps {
   onToggleActive?: (active: boolean) => void;
 }
 
-export function PlaceCard({ place, onPress, onDelete, onToggleActive }: PlaceCardProps) {
+export const PlaceCard = React.memo(function PlaceCard({ place, onPress, onDelete, onToggleActive }: PlaceCardProps) {
   const theme = useTheme();
   const userLocation = useAppStore((s) => s.userLocation);
   const categories = useAppStore((s) => s.categories);
@@ -114,7 +114,7 @@ export function PlaceCard({ place, onPress, onDelete, onToggleActive }: PlaceCar
             <Chip
               icon={category?.icon ?? 'map-marker'}
               compact
-              style={[styles.categoryChip, { backgroundColor: (category?.color ?? '#757575') + '20' }]}
+              style={{ backgroundColor: (category?.color ?? '#757575') + '20' }}
               textStyle={{ color: category?.color ?? '#757575', fontSize: 12 }}
             >
               {category?.name ?? ''}
@@ -125,7 +125,7 @@ export function PlaceCard({ place, onPress, onDelete, onToggleActive }: PlaceCar
               </Text>
             )}
             {place.notifiedAt && (
-              <Chip compact icon="check" style={[styles.visitedChip, { backgroundColor: theme.colors.secondaryContainer }]} textStyle={{ fontSize: 11 }}>
+              <Chip compact icon="check" style={{ backgroundColor: theme.colors.secondaryContainer }} textStyle={{ fontSize: 11 }}>
                 Visité
               </Chip>
             )}
@@ -139,7 +139,7 @@ export function PlaceCard({ place, onPress, onDelete, onToggleActive }: PlaceCar
       </Card>
     </Swipeable>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {
@@ -156,8 +156,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     gap: 8,
   },
-  categoryChip: {},
-  visitedChip: {},
   inactiveLabel: {
     color: '#FF8A65',
     fontStyle: 'italic',

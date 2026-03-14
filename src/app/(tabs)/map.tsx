@@ -38,19 +38,23 @@ export default function MapScreen() {
     return places.filter((p) => p.categoryId === selectedCategory);
   }, [places, selectedCategory]);
 
-  const initialRegion = location
-    ? {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      }
-    : {
-        latitude: 48.8566,
-        longitude: 2.3522,
-        latitudeDelta: 0.1,
-        longitudeDelta: 0.1,
-      };
+  const initialRegion = useMemo(
+    () =>
+      location
+        ? {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
+          }
+        : {
+            latitude: 48.8566,
+            longitude: 2.3522,
+            latitudeDelta: 0.1,
+            longitudeDelta: 0.1,
+          },
+    [location]
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>

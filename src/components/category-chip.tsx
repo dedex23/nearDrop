@@ -1,4 +1,3 @@
-import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { Chip, useTheme } from 'react-native-paper';
 import { useAppStore } from '@/stores/app-store';

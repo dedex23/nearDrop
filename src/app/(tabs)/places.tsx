@@ -10,20 +10,18 @@ import type { Place } from '@/types';
 export default function PlacesScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const {
-    places,
-    searchQuery,
-    setSearchQuery,
-    selectedCategory,
-    setSelectedCategory,
-    sortBy,
-    setSortBy,
-    isLoading,
-    loadPlaces,
-    updatePlace,
-    removePlace,
-    categories,
-  } = useAppStore();
+  const places = useAppStore((s) => s.places);
+  const searchQuery = useAppStore((s) => s.searchQuery);
+  const setSearchQuery = useAppStore((s) => s.setSearchQuery);
+  const selectedCategory = useAppStore((s) => s.selectedCategory);
+  const setSelectedCategory = useAppStore((s) => s.setSelectedCategory);
+  const sortBy = useAppStore((s) => s.sortBy);
+  const setSortBy = useAppStore((s) => s.setSortBy);
+  const isLoading = useAppStore((s) => s.isLoading);
+  const loadPlaces = useAppStore((s) => s.loadPlaces);
+  const updatePlace = useAppStore((s) => s.updatePlace);
+  const removePlace = useAppStore((s) => s.removePlace);
+  const categories = useAppStore((s) => s.categories);
 
   const filteredAndSorted = useMemo(() => {
     let result = places;

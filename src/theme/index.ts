@@ -28,5 +28,3 @@ export const darkTheme: MD3Theme = {
     error: '#CF6679',
   },
 };
-
-export const theme = lightTheme;

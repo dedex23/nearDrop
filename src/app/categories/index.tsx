@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, FlatList, StyleSheet, Alert } from 'react-native';
 import { FAB, IconButton, Text, useTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useAppStore } from '@/stores/app-store';
 import { MAX_CATEGORIES } from '@/types';
 import type { Category } from '@/types';
-import * as queries from '@/db/queries';
+import { countPlacesByAllCategories } from '@/db/queries';
 
 export default function CategoriesListScreen() {
   const router = useRouter();
@@ -18,12 +18,9 @@ export default function CategoriesListScreen() {
   const [placeCounts, setPlaceCounts] = useState<Record<string, number>>({});
 
   const loadCounts = useCallback(async () => {
-    const counts: Record<string, number> = {};
-    for (const cat of categories) {
-      counts[cat.id] = await queries.countPlacesByCategory(cat.id);
-    }
+    const counts = await countPlacesByAllCategories();
     setPlaceCounts(counts);
-  }, [categories]);
+  }, []);
 
   useEffect(() => {
     loadCategories();
@@ -33,7 +30,7 @@ export default function CategoriesListScreen() {
     loadCounts();
   }, [loadCounts]);
 
-  const sorted = [...categories].sort((a, b) => a.sortOrder - b.sortOrder);
+  const sorted = useMemo(() => [...categories].sort((a, b) => a.sortOrder - b.sortOrder), [categories]);
 
   const handleDelete = useCallback(
     async (cat: Category) => {

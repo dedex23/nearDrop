@@ -20,12 +20,19 @@ const COOLDOWN_OPTIONS = [
 export default function SettingsScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const settings = useSettingsStore();
+  const isTrackingEnabled = useSettingsStore((s) => s.isTrackingEnabled);
+  const isQuietMode = useSettingsStore((s) => s.isQuietMode);
+  const defaultRadius = useSettingsStore((s) => s.defaultRadius);
+  const cooldownHours = useSettingsStore((s) => s.cooldownHours);
+  const activeHoursStart = useSettingsStore((s) => s.activeHoursStart);
+  const activeHoursEnd = useSettingsStore((s) => s.activeHoursEnd);
+  const themeMode = useSettingsStore((s) => s.themeMode);
+  const updateSettings = useSettingsStore((s) => s.updateSettings);
   const loadPlaces = useAppStore((s) => s.loadPlaces);
   const categories = useAppStore((s) => s.categories);
   const [lastBackup, setLastBackup] = useState<Date | null>(null);
   const [cooldownIndex, setCooldownIndex] = useState(() => {
-    const idx = COOLDOWN_OPTIONS.findIndex((o) => o.value === settings.cooldownHours);
+    const idx = COOLDOWN_OPTIONS.findIndex((o) => o.value === cooldownHours);
     return idx >= 0 ? idx : 3; // default to 24h
   });
 
@@ -58,7 +65,7 @@ export default function SettingsScreen() {
   };
 
   const handleTrackingToggle = async (enabled: boolean) => {
-    settings.updateSettings({ isTrackingEnabled: enabled });
+    updateSettings({ isTrackingEnabled: enabled });
     if (enabled) {
       const success = await startBackgroundLocation();
       if (!success) {
@@ -66,7 +73,7 @@ export default function SettingsScreen() {
           'Permission requise',
           'NearDrop a besoin de la permission de localisation en arrière-plan pour vous notifier à proximité de vos lieux sauvegardés.'
         );
-        settings.updateSettings({ isTrackingEnabled: false });
+        updateSettings({ isTrackingEnabled: false });
       }
     } else {
       await stopBackgroundLocation();
@@ -76,7 +83,7 @@ export default function SettingsScreen() {
   const handleCooldownChange = (value: number) => {
     const index = Math.round(value);
     setCooldownIndex(index);
-    settings.updateSettings({ cooldownHours: COOLDOWN_OPTIONS[index].value });
+    updateSettings({ cooldownHours: COOLDOWN_OPTIONS[index].value });
   };
 
   return (
@@ -86,12 +93,12 @@ export default function SettingsScreen() {
 
         <List.Item
           title="Suivi en arrière-plan"
-          description={settings.isTrackingEnabled ? 'Actif — surveillance des lieux à proximité' : 'En pause'}
+          description={isTrackingEnabled ? 'Actif — surveillance des lieux à proximité' : 'En pause'}
           left={(props) => <List.Icon {...props} icon="crosshairs-gps" />}
           right={() => (
             <Switch
               testID="switch-tracking"
-              value={settings.isTrackingEnabled}
+              value={isTrackingEnabled}
               onValueChange={handleTrackingToggle}
               color={theme.colors.primary}
             />
@@ -105,8 +112,8 @@ export default function SettingsScreen() {
           right={() => (
             <Switch
               testID="switch-quiet-mode"
-              value={settings.isQuietMode}
-              onValueChange={(v) => settings.updateSettings({ isQuietMode: v })}
+              value={isQuietMode}
+              onValueChange={(v) => updateSettings({ isQuietMode: v })}
               color={theme.colors.primary}
             />
           )}
@@ -120,12 +127,12 @@ export default function SettingsScreen() {
 
         <View style={styles.sliderSection}>
           <Text variant="bodyMedium" style={styles.sliderLabel}>
-            Rayon par défaut : {settings.defaultRadius}m
+            Rayon par défaut : {defaultRadius}m
           </Text>
           <Slider
-            value={settings.defaultRadius}
+            value={defaultRadius}
             onSlidingComplete={(v: number) =>
-              settings.updateSettings({ defaultRadius: Math.round(v) })
+              updateSettings({ defaultRadius: Math.round(v) })
             }
             minimumValue={50}
             maximumValue={500}
@@ -162,12 +169,12 @@ export default function SettingsScreen() {
 
         <View style={styles.sliderSection}>
           <Text variant="bodyMedium" style={styles.sliderLabel}>
-            Début : {settings.activeHoursStart}:00
+            Début : {activeHoursStart}:00
           </Text>
           <Slider
-            value={settings.activeHoursStart}
+            value={activeHoursStart}
             onSlidingComplete={(v: number) =>
-              settings.updateSettings({ activeHoursStart: Math.round(v) })
+              updateSettings({ activeHoursStart: Math.round(v) })
             }
             minimumValue={0}
             maximumValue={23}
@@ -181,12 +188,12 @@ export default function SettingsScreen() {
 
         <View style={styles.sliderSection}>
           <Text variant="bodyMedium" style={styles.sliderLabel}>
-            Fin : {settings.activeHoursEnd}:00
+            Fin : {activeHoursEnd}:00
           </Text>
           <Slider
-            value={settings.activeHoursEnd}
+            value={activeHoursEnd}
             onSlidingComplete={(v: number) =>
-              settings.updateSettings({ activeHoursEnd: Math.round(v) })
+              updateSettings({ activeHoursEnd: Math.round(v) })
             }
             minimumValue={0}
             maximumValue={23}
@@ -217,8 +224,8 @@ export default function SettingsScreen() {
         <List.Subheader>Apparence</List.Subheader>
         <View style={styles.themeButtons}>
           <SegmentedButtons
-            value={settings.themeMode}
-            onValueChange={(v) => settings.updateSettings({ themeMode: v as ThemeMode })}
+            value={themeMode}
+            onValueChange={(v) => updateSettings({ themeMode: v as ThemeMode })}
             buttons={[
               { value: 'system', label: 'Auto' },
               { value: 'light', label: 'Clair' },

@@ -19,7 +19,7 @@ type Props = {
   onMarkerPress?: (place: Place) => void;
 };
 
-export default function MapViewComponent({
+function MapViewComponent({
   places,
   userLocation,
   initialRegion,
@@ -101,6 +101,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
+
+export default React.memo(MapViewComponent);
 
 const darkMapStyle = [
   { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
