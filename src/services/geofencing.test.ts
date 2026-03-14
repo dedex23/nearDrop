@@ -57,6 +57,7 @@ function defaultSettings() {
     activeHoursEnd: 22,
     isQuietMode: false,
     isTrackingEnabled: true,
+    themeMode: 'system' as const,
     updateSettings: jest.fn(),
   };
 }
