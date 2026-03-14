@@ -26,6 +26,12 @@ export const useSettingsStore = create<SettingsState>()(
         if (validated.activeHoursEnd !== undefined) {
           validated.activeHoursEnd = Math.max(0, Math.min(23, Math.round(validated.activeHoursEnd)));
         }
+        if (
+          validated.themeMode !== undefined &&
+          !['system', 'light', 'dark'].includes(validated.themeMode)
+        ) {
+          delete validated.themeMode;
+        }
         // Discard any NaN numeric values
         for (const key of Object.keys(validated) as (keyof Settings)[]) {
           if (typeof validated[key] === 'number' && isNaN(validated[key] as number)) {
