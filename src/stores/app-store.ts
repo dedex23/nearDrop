@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Place, PlaceInsert, Category, CategoryInsert } from '@/types';
 import * as queries from '@/db/queries';
+import { scheduleBackup } from '@/services/backup';
 
 interface AppState {
   // Places
@@ -59,7 +60,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   addPlace: async (data) => {
     const place = await queries.insertPlace(data);
     set((s) => ({ places: [place, ...s.places] }));
-    // TODO: scheduleBackup()
+    scheduleBackup();
     return place;
   },
 
@@ -72,7 +73,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
     try {
       await queries.updatePlace(id, data);
-      // TODO: scheduleBackup()
+      scheduleBackup();
     } catch (error) {
       console.error('[NearDrop] Failed to update place:', error);
       // Rollback: re-fetch from database
@@ -83,7 +84,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   removePlace: async (id) => {
     await queries.deletePlace(id);
     set((s) => ({ places: s.places.filter((p) => p.id !== id) }));
-    // TODO: scheduleBackup()
+    scheduleBackup();
   },
 
   setSearchQuery: (searchQuery) => set({ searchQuery }),
@@ -105,7 +106,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   addCategory: async (data) => {
     const category = await queries.insertCategory(data);
     set((s) => ({ categories: [...s.categories, category] }));
-    // TODO: scheduleBackup()
+    scheduleBackup();
     return category;
   },
 
@@ -114,7 +115,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((s) => ({
       categories: s.categories.map((c) => (c.id === id ? { ...c, ...data } : c)),
     }));
-    // TODO: scheduleBackup()
+    scheduleBackup();
   },
 
   removeCategory: async (id) => {
@@ -126,7 +127,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
     await queries.deleteCategory(id);
     set((s) => ({ categories: s.categories.filter((c) => c.id !== id) }));
-    // TODO: scheduleBackup()
+    scheduleBackup();
   },
 
   reorderCategories: async (orderedIds) => {
@@ -139,6 +140,6 @@ export const useAppStore = create<AppState>((set, get) => ({
         })
         .filter((c): c is Category => c !== null),
     }));
-    // TODO: scheduleBackup()
+    scheduleBackup();
   },
 }));

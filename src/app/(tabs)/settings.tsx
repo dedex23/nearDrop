@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, ScrollView, StyleSheet, Alert, Share } from 'react-native';
 import { List, Switch, Text, Divider, SegmentedButtons } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { useSettingsStore } from '@/stores/settings-store';
 import { useAppStore } from '@/stores/app-store';
 import { startBackgroundLocation, stopBackgroundLocation } from '@/services/location';
+import { getLastBackupDate, getBackupList, restoreBackup } from '@/services/backup';
 import * as queries from '@/db/queries';
 import type { ThemeMode } from '@/types';
 
@@ -21,11 +22,41 @@ export default function SettingsScreen() {
   const router = useRouter();
   const settings = useSettingsStore();
   const places = useAppStore((s) => s.places);
+  const loadPlaces = useAppStore((s) => s.loadPlaces);
   const categories = useAppStore((s) => s.categories);
+  const [lastBackup, setLastBackup] = useState<Date | null>(null);
   const [cooldownIndex, setCooldownIndex] = useState(() => {
     const idx = COOLDOWN_OPTIONS.findIndex((o) => o.value === settings.cooldownHours);
     return idx >= 0 ? idx : 3; // default to 24h
   });
+
+  useEffect(() => {
+    setLastBackup(getLastBackupDate());
+  }, []);
+
+  const handleRestore = async () => {
+    const backups = getBackupList();
+    if (backups.length === 0) {
+      Alert.alert('Aucune sauvegarde disponible');
+      return;
+    }
+
+    const buttons = backups.map((b) => ({
+      text: b.date.toLocaleString(),
+      onPress: async () => {
+        const success = restoreBackup(b.name);
+        if (success) {
+          Alert.alert('Restauration réussie', 'Les données ont été restaurées. Rechargement...');
+          await loadPlaces();
+        } else {
+          Alert.alert('Échec', 'La restauration a échoué.');
+        }
+      },
+    }));
+    buttons.push({ text: 'Annuler', onPress: async () => {} });
+
+    Alert.alert('Restaurer une sauvegarde', 'Choisissez une sauvegarde :', buttons);
+  };
 
   const handleTrackingToggle = async (enabled: boolean) => {
     settings.updateSettings({ isTrackingEnabled: enabled });
@@ -226,6 +257,19 @@ export default function SettingsScreen() {
 
       <List.Section>
         <List.Subheader>Données</List.Subheader>
+
+        <List.Item
+          title="Sauvegarde automatique"
+          description={lastBackup ? `Dernière : ${lastBackup.toLocaleString()}` : 'Aucune sauvegarde'}
+          left={(props) => <List.Icon {...props} icon="backup-restore" />}
+        />
+
+        <List.Item
+          title="Restaurer une sauvegarde"
+          description="Restaurer à partir d'une sauvegarde locale"
+          left={(props) => <List.Icon {...props} icon="history" />}
+          onPress={handleRestore}
+        />
 
         <List.Item
           title="Exporter les données"
