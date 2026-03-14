@@ -66,30 +66,36 @@ function MapViewComponent({
       customMapStyle={theme.dark ? darkMapStyle : undefined}
       userInterfaceStyle={theme.dark ? 'dark' : 'light'}
     >
+      {/* Markers as direct children for clustering to work */}
       {placesWithDistance.map(({ place, distance, category }) => {
         const color = category?.color ?? '#757575';
         return (
-          <React.Fragment key={place.id}>
-            <Marker
-              coordinate={{ latitude: place.latitude, longitude: place.longitude }}
-              title={place.name}
-              description={
-                distance !== null
-                  ? `${category?.name ?? ''} — ${formatDistance(distance)}`
-                  : category?.name ?? ''
-              }
-              pinColor={color}
-              onPress={() => onMarkerPress?.(place)}
-            />
-            {place.isActive && (
-              <Circle
-                center={{ latitude: place.latitude, longitude: place.longitude }}
-                radius={place.radius}
-                strokeColor={color + '60'}
-                fillColor={color + '15'}
-              />
-            )}
-          </React.Fragment>
+          <Marker
+            key={place.id}
+            coordinate={{ latitude: place.latitude, longitude: place.longitude }}
+            title={place.name}
+            description={
+              distance !== null
+                ? `${category?.name ?? ''} — ${formatDistance(distance)}`
+                : category?.name ?? ''
+            }
+            pinColor={color}
+            onPress={() => onMarkerPress?.(place)}
+          />
+        );
+      })}
+      {/* Circles rendered separately — not clusterable */}
+      {placesWithDistance.map(({ place, category }) => {
+        if (!place.isActive) return null;
+        const color = category?.color ?? '#757575';
+        return (
+          <Circle
+            key={`circle-${place.id}`}
+            center={{ latitude: place.latitude, longitude: place.longitude }}
+            radius={place.radius}
+            strokeColor={color + '60'}
+            fillColor={color + '15'}
+          />
         );
       })}
     </ClusteredMapView>
