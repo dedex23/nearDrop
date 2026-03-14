@@ -46,16 +46,18 @@ export async function setupNotifications(): Promise<boolean> {
 
 export async function sendProximityNotification(
   place: Place,
-  distanceMeters?: number
+  distanceMeters?: number,
+  categoryName?: string
 ): Promise<void> {
   const distanceText = distanceMeters ? ` (${formatDistance(distanceMeters)})` : '';
+  const label = categoryName ?? '';
 
   console.log('[NearDrop][Notif] Sending:', place.name, distanceText);
   await Notifications.scheduleNotificationAsync({
     identifier: `proximity-${place.id}`,
     content: {
       title: `À proximité : ${place.name}`,
-      body: `${place.category} — ${place.address}${distanceText}`,
+      body: label ? `${label} — ${place.address}${distanceText}` : `${place.address}${distanceText}`,
       data: { placeId: place.id },
     },
     trigger: { channelId: 'proximity-v2' },
