@@ -154,8 +154,7 @@ async function parseGoogleMapsShare(
   return {
     name: name || 'Shared place',
     address: address || '',
-    latitude: geocoded?.latitude ?? 0,
-    longitude: geocoded?.longitude ?? 0,
+    ...(geocoded ? { latitude: geocoded.latitude, longitude: geocoded.longitude } : {}),
     sourceType: 'google_maps',
     sourceUrl: url,
     notes: '',
@@ -337,8 +336,7 @@ async function parsePlainTextShare(rawText: string): Promise<Partial<ParsedShare
     return {
       name: rawText.split('\n')[0]?.trim().substring(0, 60) || 'Shared place',
       address,
-      latitude: geocoded?.latitude ?? 0,
-      longitude: geocoded?.longitude ?? 0,
+      ...(geocoded ? { latitude: geocoded.latitude, longitude: geocoded.longitude } : {}),
       sourceType: 'share_intent',
       notes: '',
     };

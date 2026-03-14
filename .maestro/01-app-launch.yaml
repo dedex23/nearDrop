@@ -7,11 +7,11 @@ appId: com.neardrop.app
 
 # Assert the Map tab is visible
 - extendedWaitUntil:
-    visible: "Map"
+    visible: "Carte"
     timeout: 15000
 - assertVisible:
-    text: "places"
+    text: "lieux"
 
 # Verify bottom tab bar is present
-- assertVisible: "Places"
-- assertVisible: "Settings"
+- assertVisible: "Lieux"
+- assertVisible: "Paramètres"

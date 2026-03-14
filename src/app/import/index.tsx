@@ -6,37 +6,37 @@ import { Stack } from 'expo-router';
 export default function ImportScreen() {
   return (
     <>
-      <Stack.Screen options={{ title: 'Import Places' }} />
+      <Stack.Screen options={{ title: 'Importer des lieux' }} />
       <View style={styles.container}>
         <Text variant="headlineSmall" style={styles.title}>
-          Import Places
+          Importer des lieux
         </Text>
         <Text variant="bodyMedium" style={styles.subtitle}>
-          Import places from various sources. Coming in a future update.
+          Importez des lieux depuis différentes sources. Disponible dans une future mise à jour.
         </Text>
 
         <List.Section>
           <List.Item
-            title="Instagram Export (RGPD)"
-            description="Parse saved posts from Instagram data export"
+            title="Export Instagram (RGPD)"
+            description="Importer les publications sauvegardées depuis l'export Instagram"
             left={(props) => <List.Icon {...props} icon="instagram" />}
             disabled
           />
           <List.Item
-            title="Facebook Export (RGPD)"
-            description="Parse saved places from Facebook data export"
+            title="Export Facebook (RGPD)"
+            description="Importer les lieux sauvegardés depuis l'export Facebook"
             left={(props) => <List.Icon {...props} icon="facebook" />}
             disabled
           />
           <List.Item
-            title="Google Maps Lists"
-            description="Import from Google Maps CSV export"
+            title="Listes Google Maps"
+            description="Importer depuis l'export CSV Google Maps"
             left={(props) => <List.Icon {...props} icon="google-maps" />}
             disabled
           />
           <List.Item
-            title="CSV / JSON File"
-            description="Import from a generic CSV or JSON file"
+            title="Fichier CSV / JSON"
+            description="Importer depuis un fichier CSV ou JSON générique"
             left={(props) => <List.Icon {...props} icon="file-import" />}
             disabled
           />

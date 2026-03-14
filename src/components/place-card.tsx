@@ -53,12 +53,12 @@ export function PlaceCard({ place, onPress }: PlaceCardProps) {
           )}
           {place.notifiedAt && (
             <Chip compact icon="check" style={styles.visitedChip} textStyle={{ fontSize: 11 }}>
-              Visited
+              Visité
             </Chip>
           )}
           {!place.isActive && (
             <Text variant="bodySmall" style={styles.inactiveLabel}>
-              Paused
+              En pause
             </Text>
           )}
         </Card.Content>

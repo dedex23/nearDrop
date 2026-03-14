@@ -59,14 +59,14 @@ describe('parseSharedContent', () => {
       expect(result.longitude).toBe(2.3);
     });
 
-    it('sets lat/lon to 0 when geocoding fails', async () => {
+    it('omits lat/lon when geocoding fails', async () => {
       mockGeocode.mockResolvedValue(null);
       const result = await parseSharedContent(
         'Unknown place\nhttps://goo.gl/maps/xyz',
         null
       );
-      expect(result.latitude).toBe(0);
-      expect(result.longitude).toBe(0);
+      expect(result.latitude).toBeUndefined();
+      expect(result.longitude).toBeUndefined();
     });
 
     it('resolves shortened maps.app.goo.gl URL via HTML body parsing', async () => {

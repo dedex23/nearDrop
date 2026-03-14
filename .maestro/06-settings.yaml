@@ -7,16 +7,16 @@ appId: com.neardrop.app
 
 # Wait for app to fully load
 - extendedWaitUntil:
-    visible: "Map"
+    visible: "Carte"
     timeout: 15000
 
 # Navigate to Settings
-- tapOn: "Settings"
+- tapOn: "Paramètres"
 
 # Verify settings sections are visible
-- assertVisible: "Background Tracking"
-- assertVisible: "Quiet Mode"
-- assertVisible: "Notification Settings"
+- assertVisible: "Suivi en arrière-plan"
+- assertVisible: "Mode silencieux"
+- assertVisible: "Paramètres de notification"
 
 # Toggle Quiet Mode on
 - tapOn:
@@ -27,15 +27,15 @@ appId: com.neardrop.app
     direction: UP
     duration: 500
 
-- assertVisible: "Active Hours"
+- assertVisible: "Heures actives"
 
 # Scroll further for data section
 - swipe:
     direction: UP
     duration: 500
 
-- assertVisible: "Export Data"
-- assertVisible: "Import Data"
+- assertVisible: "Exporter les données"
+- assertVisible: "Importer des données"
 
 # Scroll to About
 - swipe:
