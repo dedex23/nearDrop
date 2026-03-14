@@ -7,47 +7,68 @@ appId: com.neardrop.app
 
 # Wait for app to fully load
 - extendedWaitUntil:
-    visible: "Map"
+    visible: 'Carte'
     timeout: 15000
 
 # Navigate to Places tab
-- tapOn: "Places"
+- tapOn: 'Lieux'
+- waitForAnimationToEnd
+
+# Recovery: expo-router useLinking race condition can break navigation.
+- runFlow:
+    when:
+      notVisible:
+        id: 'fab-add-place'
+    commands:
+      - stopApp
+      - launchApp:
+          clearState: true
+      - runFlow: flows/dismiss-permissions.yaml
+      - extendedWaitUntil:
+          visible: 'Carte'
+          timeout: 15000
+      - tapOn: 'Lieux'
+
+- extendedWaitUntil:
+    visible:
+      id: 'fab-add-place'
+    timeout: 10000
 
 # Tap FAB to open the Add Place form
 - tapOn:
-    id: "fab-add-place"
+    id: 'fab-add-place'
 
 # Verify form is visible
 - extendedWaitUntil:
-    visible: "Add Place"
+    visible: 'Ajouter un lieu'
     timeout: 10000
 
 # Fill in Name
 - tapOn:
-    id: "input-name"
-- inputText: "Bistro"
+    id: 'input-name'
+- inputText: 'Bistro'
 - hideKeyboard
 
 # Fill in Address
 - tapOn:
-    id: "input-address"
-- inputText: "10 Rivoli"
+    id: 'input-address'
+- inputText: '10 rue de Rivoli'
 - hideKeyboard
 
 # Select category Restaurant
-- tapOn: "Restaurant"
+- tapOn: 'Restaurant'
 
 # Submit the form
 - tapOn:
-    id: "btn-submit-place"
+    id: 'btn-submit-place'
 
 # Wait for geocoding + navigation back (Nominatim can be slow)
 - extendedWaitUntil:
-    visible: "Places"
+    visible: 'Lieux'
     timeout: 15000
 
 # Navigate to Places tab to see the new place
-- tapOn: "Places"
+- tapOn: 'Lieux'
 
 # Assert the place appears in the list
-- assertVisible: "Bistro"
+- assertVisible: 'Bistro'

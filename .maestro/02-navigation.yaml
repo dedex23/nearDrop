@@ -7,11 +7,11 @@ appId: com.neardrop.app
 
 # Start on Map tab
 - extendedWaitUntil:
-    visible: "Map"
+    visible: "Carte"
     timeout: 15000
 
 # Navigate to Places tab
-- tapOn: "Places"
+- tapOn: "Lieux"
 - waitForAnimationToEnd
 
 # Recovery: expo-router useLinking race condition can break navigation.
@@ -26,9 +26,9 @@ appId: com.neardrop.app
           clearState: true
       - runFlow: flows/dismiss-permissions.yaml
       - extendedWaitUntil:
-          visible: "Map"
+          visible: "Carte"
           timeout: 15000
-      - tapOn: "Places"
+      - tapOn: "Lieux"
 
 - extendedWaitUntil:
     visible:
@@ -37,15 +37,15 @@ appId: com.neardrop.app
 
 # Navigate to Settings tab
 - tapOn:
-    text: "Settings"
+    text: "Paramètres"
     retryTapIfNoChange: true
 - extendedWaitUntil:
-    visible: "Background Tracking"
+    visible: "Suivi en arrière-plan"
     timeout: 10000
 
 # Navigate back to Map tab
 - tapOn:
-    text: "Map"
+    text: "Carte"
     retryTapIfNoChange: true
 - extendedWaitUntil:
     visible:

@@ -60,8 +60,12 @@ function RootLayoutInner() {
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
       const placeId = response.notification.request.content.data?.placeId as string | undefined;
-      if (placeId) {
-        router.push(`/place/${placeId}`);
+      const placeIds = response.notification.request.content.data?.placeIds as
+        | string[]
+        | undefined;
+      const targetId = placeId || placeIds?.[0];
+      if (targetId) {
+        router.push(`/place/${targetId}`);
       }
     });
     return () => subscription.remove();

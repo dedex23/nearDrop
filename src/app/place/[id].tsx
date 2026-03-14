@@ -63,8 +63,13 @@ export default function PlaceDetailScreen() {
         style: 'destructive',
         onPress: async () => {
           isDeleting.current = true;
-          await removePlace(place.id);
-          router.back();
+          try {
+            await removePlace(place.id);
+            router.back();
+          } catch (error) {
+            isDeleting.current = false;
+            console.error('[NearDrop] Delete failed:', error);
+          }
         },
       },
     ]);
