@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 import MapView, { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
-import { useRouter } from 'expo-router';
 import { useAppStore } from '@/stores/app-store';
 import { haversineDistance, formatDistance } from '@/utils/distance';
 import type { Place } from '@/types';
@@ -15,10 +14,15 @@ type Props = {
     latitudeDelta: number;
     longitudeDelta: number;
   };
+  onMarkerPress?: (place: Place) => void;
 };
 
-export default function MapViewComponent({ places, userLocation, initialRegion }: Props) {
-  const router = useRouter();
+export default function MapViewComponent({
+  places,
+  userLocation,
+  initialRegion,
+  onMarkerPress,
+}: Props) {
   const categories = useAppStore((s) => s.categories);
 
   const categoryMap = useMemo(
@@ -67,7 +71,7 @@ export default function MapViewComponent({ places, userLocation, initialRegion }
                   : category?.name ?? ''
               }
               pinColor={color}
-              onCalloutPress={() => router.push(`/place/${place.id}` as never)}
+              onPress={() => onMarkerPress?.(place)}
             />
             {place.isActive && (
               <Circle

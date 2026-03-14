@@ -1,12 +1,16 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useState, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { FAB, Badge, Text } from 'react-native-paper';
 import { useRouter } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import BottomSheet from '@gorhom/bottom-sheet';
 import { useAppStore } from '@/stores/app-store';
 import { useSettingsStore } from '@/stores/settings-store';
 import { useLocation } from '@/hooks/use-location';
 import { CategoryChips } from '@/components/category-chip';
 import MapViewComponent from '@/components/map-view';
+import { PlaceBottomSheet } from '@/components/place-bottom-sheet';
+import type { Place } from '@/types';
 
 export default function MapScreen() {
   const router = useRouter();
@@ -16,6 +20,18 @@ export default function MapScreen() {
   const setSelectedCategory = useAppStore((s) => s.setSelectedCategory);
   const userLocation = useAppStore((s) => s.userLocation);
   const isTrackingEnabled = useSettingsStore((s) => s.isTrackingEnabled);
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const bottomSheetRef = useRef<BottomSheet>(null);
+
+  const handleMarkerPress = useCallback((place: Place) => {
+    setSelectedPlace(place);
+    bottomSheetRef.current?.snapToIndex(0);
+  }, []);
+
+  const handleDismiss = useCallback(() => {
+    setSelectedPlace(null);
+    bottomSheetRef.current?.close();
+  }, []);
 
   const filteredPlaces = useMemo(() => {
     if (!selectedCategory) return places;
@@ -37,7 +53,7 @@ export default function MapScreen() {
       };
 
   return (
-    <View style={styles.container}>
+    <GestureHandlerRootView style={styles.container}>
       <CategoryChips selected={selectedCategory} onSelect={setSelectedCategory} />
 
       <View style={styles.statusBar}>
@@ -55,6 +71,7 @@ export default function MapScreen() {
         places={filteredPlaces}
         userLocation={userLocation}
         initialRegion={initialRegion}
+        onMarkerPress={handleMarkerPress}
       />
 
       <FAB
@@ -63,7 +80,13 @@ export default function MapScreen() {
         style={styles.fab}
         onPress={() => router.push('/place/add' as never)}
       />
-    </View>
+
+      <PlaceBottomSheet
+        ref={bottomSheetRef}
+        place={selectedPlace}
+        onDismiss={handleDismiss}
+      />
+    </GestureHandlerRootView>
   );
 }
 
