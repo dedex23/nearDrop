@@ -19,6 +19,7 @@ export default function PlacesScreen() {
     setSortBy,
     isLoading,
     loadPlaces,
+    categories,
   } = useAppStore();
 
   const filteredAndSorted = useMemo(() => {
@@ -37,7 +38,7 @@ export default function PlacesScreen() {
 
     // Filter by category
     if (selectedCategory) {
-      result = result.filter((p) => p.category === selectedCategory);
+      result = result.filter((p) => p.categoryId === selectedCategory);
     }
 
     // Sort
@@ -45,14 +46,17 @@ export default function PlacesScreen() {
       switch (sortBy) {
         case 'name':
           return a.name.localeCompare(b.name);
-        case 'category':
-          return a.category.localeCompare(b.category);
+        case 'category': {
+          const catA = categories.find((c) => c.id === a.categoryId);
+          const catB = categories.find((c) => c.id === b.categoryId);
+          return (catA?.name ?? '').localeCompare(catB?.name ?? '');
+        }
         case 'date':
         default:
           return b.createdAt.getTime() - a.createdAt.getTime();
       }
     });
-  }, [places, searchQuery, selectedCategory, sortBy]);
+  }, [places, searchQuery, selectedCategory, sortBy, categories]);
 
   const renderItem = useCallback(
     ({ item }: { item: Place }) => (
