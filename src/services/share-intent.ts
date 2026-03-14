@@ -4,6 +4,7 @@ import {
   extractLocationHintFromText,
 } from '@/utils/address-parser';
 import { geocodeAddress } from './geocoding';
+import { useAppStore } from '@/stores/app-store';
 import type { SourceType } from '@/types';
 
 interface ParsedShareData {
@@ -298,7 +299,8 @@ async function enrichSocialShare(
 
   // Step 3: Geocode the best candidate
   if (bestCandidate) {
-    const geocoded = await geocodeAddress(bestCandidate);
+    const userLocation = useAppStore.getState().userLocation;
+    const geocoded = await geocodeAddress(bestCandidate, userLocation);
     console.log(`[NearDrop] geocode result:`, JSON.stringify(geocoded));
     if (geocoded) {
       return {
@@ -415,17 +417,11 @@ function extractPlaceNameFromOgTitle(ogTitle: string | null): string {
   }
 
   // Instagram OG title format: "Username on Instagram: \"caption...\""
-  // Extract just the username part as fallback
   const igMatch = ogTitle.match(/^(.+?)\s+on Instagram:/);
   if (igMatch) {
-    // Don't use the username as place name — it's not useful
-    // Instead, try first meaningful line of the caption
-    const captionMatch = ogTitle.match(/on Instagram: "(.+?)[\n"]/);
-    if (captionMatch) {
-      const firstLine = captionMatch[1].trim();
-      // Only use if it's short enough to be a name (not a full description)
-      if (firstLine.length <= 60) return firstLine;
-    }
+    // Use the account display name as the place name — often the business name
+    const accountName = igMatch[1].trim();
+    if (accountName.length > 0 && accountName.length <= 60) return accountName;
   }
 
   // If title is short enough, use it directly

@@ -34,10 +34,17 @@ async function throttledFetch(url: string): Promise<Response> {
 }
 
 export async function geocodeAddress(
-  address: string
+  address: string,
+  nearLocation?: { latitude: number; longitude: number } | null
 ): Promise<{ latitude: number; longitude: number; displayName: string } | null> {
   try {
-    const url = `${NOMINATIM_BASE}/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+    let url = `${NOMINATIM_BASE}/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+    // Bias results near user's location if available
+    if (nearLocation) {
+      const delta = 0.5; // ~50km bounding box
+      const viewbox = `${nearLocation.longitude - delta},${nearLocation.latitude - delta},${nearLocation.longitude + delta},${nearLocation.latitude + delta}`;
+      url += `&viewbox=${viewbox}&bounded=0`;
+    }
     const res = await throttledFetch(url);
     if (!res.ok) return null;
 
