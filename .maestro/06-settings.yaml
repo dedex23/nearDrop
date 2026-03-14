@@ -22,16 +22,6 @@ appId: com.neardrop.app
 - tapOn:
     id: "switch-quiet-mode"
 
-# Scroll to see more settings — need more swipes now with new sections
-- scrollUntilVisible:
-    element: "Heures actives"
-    direction: DOWN
-
-# Scroll further for categories and appearance sections
-- swipe:
-    direction: UP
-    duration: 500
-
 # Scroll to About
 - scrollUntilVisible:
     element: "NearDrop"

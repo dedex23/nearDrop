@@ -24,8 +24,6 @@ export default function SettingsScreen() {
   const isQuietMode = useSettingsStore((s) => s.isQuietMode);
   const defaultRadius = useSettingsStore((s) => s.defaultRadius);
   const cooldownHours = useSettingsStore((s) => s.cooldownHours);
-  const activeHoursStart = useSettingsStore((s) => s.activeHoursStart);
-  const activeHoursEnd = useSettingsStore((s) => s.activeHoursEnd);
   const themeMode = useSettingsStore((s) => s.themeMode);
   const updateSettings = useSettingsStore((s) => s.updateSettings);
   const loadPlaces = useAppStore((s) => s.loadPlaces);
@@ -153,50 +151,6 @@ export default function SettingsScreen() {
             onSlidingComplete={handleCooldownChange}
             minimumValue={0}
             maximumValue={COOLDOWN_OPTIONS.length - 1}
-            step={1}
-            minimumTrackTintColor={theme.colors.primary}
-            maximumTrackTintColor={theme.colors.surfaceVariant}
-            thumbTintColor={theme.colors.primary}
-            style={styles.slider}
-          />
-        </View>
-      </List.Section>
-
-      <Divider />
-
-      <List.Section>
-        <List.Subheader>Heures actives</List.Subheader>
-
-        <View style={styles.sliderSection}>
-          <Text variant="bodyMedium" style={styles.sliderLabel}>
-            Début : {activeHoursStart}:00
-          </Text>
-          <Slider
-            value={activeHoursStart}
-            onSlidingComplete={(v: number) =>
-              updateSettings({ activeHoursStart: Math.round(v) })
-            }
-            minimumValue={0}
-            maximumValue={23}
-            step={1}
-            minimumTrackTintColor={theme.colors.primary}
-            maximumTrackTintColor={theme.colors.surfaceVariant}
-            thumbTintColor={theme.colors.primary}
-            style={styles.slider}
-          />
-        </View>
-
-        <View style={styles.sliderSection}>
-          <Text variant="bodyMedium" style={styles.sliderLabel}>
-            Fin : {activeHoursEnd}:00
-          </Text>
-          <Slider
-            value={activeHoursEnd}
-            onSlidingComplete={(v: number) =>
-              updateSettings({ activeHoursEnd: Math.round(v) })
-            }
-            minimumValue={0}
-            maximumValue={23}
             step={1}
             minimumTrackTintColor={theme.colors.primary}
             maximumTrackTintColor={theme.colors.surfaceVariant}
