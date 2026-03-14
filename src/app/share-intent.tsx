@@ -84,7 +84,7 @@ export default function ShareIntentScreen() {
     return (
       <>
         <Stack.Screen options={{ title: 'Lieu partagé' }} />
-        <View style={styles.loading}>
+        <View style={[styles.loading, { backgroundColor: theme.colors.background }]}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
           <Text style={{ marginTop: 8, color: theme.colors.onSurfaceVariant }}>Analyse du contenu partagé...</Text>
         </View>

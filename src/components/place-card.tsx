@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   categoryChip: {},
   visitedChip: {},
   inactiveLabel: {
-    color: '#E65100',
+    color: '#FF8A65',
     fontStyle: 'italic',
   },
   swipeRight: {

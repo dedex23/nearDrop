@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import { TextInput, Button, Text, HelperText } from 'react-native-paper';
+import { TextInput, Button, Text, HelperText, useTheme } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { CategoryPicker } from './category-chip';
 import { geocodeAddress } from '@/services/geocoding';
@@ -13,6 +13,7 @@ interface PlaceFormProps {
 }
 
 export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Enregistrer' }: PlaceFormProps) {
+  const theme = useTheme();
   const [name, setName] = useState(initialValues?.name ?? '');
   const [address, setAddress] = useState(initialValues?.address ?? '');
   const [categoryId, setCategoryId] = useState(initialValues?.categoryId ?? 'cat-other');
@@ -88,7 +89,7 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Enregistrer'
   };
 
   return (
-    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
+    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} keyboardShouldPersistTaps="handled">
       <TextInput
         testID="input-name"
         label="Nom *"
@@ -155,9 +156,9 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Enregistrer'
         minimumValue={50}
         maximumValue={500}
         step={10}
-        minimumTrackTintColor="#6200EE"
-        maximumTrackTintColor="#E0E0E0"
-        thumbTintColor="#6200EE"
+        minimumTrackTintColor={theme.colors.primary}
+        maximumTrackTintColor={theme.colors.surfaceVariant}
+        thumbTintColor={theme.colors.primary}
         style={styles.slider}
       />
 
