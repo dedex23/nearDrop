@@ -59,9 +59,11 @@ appId: com.neardrop.app
 - tapOn:
     id: "btn-submit-place"
 
-# Wait for geocoding and navigation back
+# After submit, the app redirects to the Map tab
 - waitForAnimationToEnd
+- assertVisible:
+    id: "fab-add-place-map"
 
-# Verify the place was created
+# Navigate to Places tab to verify the place was created
 - tapOn: "Lieux"
 - assertVisible: "Test Notif Place"

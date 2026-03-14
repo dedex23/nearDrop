@@ -22,6 +22,28 @@ appId: com.neardrop.app
 - tapOn:
     id: "switch-quiet-mode"
 
+# Scroll to Catégories section
+- scrollUntilVisible:
+    element: "Gérer les catégories"
+    direction: DOWN
+
+- assertVisible: "Gérer les catégories"
+
+# Scroll to Apparence section
+- scrollUntilVisible:
+    element: "Apparence"
+    direction: DOWN
+
+- assertVisible: "Apparence"
+
+# Scroll to Données section
+- scrollUntilVisible:
+    element: "Sauvegarde automatique"
+    direction: DOWN
+
+- assertVisible: "Sauvegarde automatique"
+- assertVisible: "Restaurer une sauvegarde"
+
 # Scroll to About
 - scrollUntilVisible:
     element: "NearDrop"

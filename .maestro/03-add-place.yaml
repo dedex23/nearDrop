@@ -54,11 +54,12 @@ appId: com.neardrop.app
 - tapOn:
     id: 'btn-submit-place'
 
-# Wait for geocoding + navigation back (Nominatim can be slow)
-- assertVisible: 'Lieux'
+# After submit, the app redirects to the Map tab (router.replace to /(tabs)/map)
+# Wait for geocoding + navigation (can take 2-5s with Google Geocoding)
+- waitForAnimationToEnd
+- assertVisible:
+    id: 'fab-add-place-map'
 
-# Navigate to Places tab to see the new place
+# Navigate to Places tab to verify the place appears in the list
 - tapOn: 'Lieux'
-
-# Assert the place appears in the list
 - assertVisible: 'Bistro'

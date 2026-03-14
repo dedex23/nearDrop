@@ -41,10 +41,16 @@ appId: com.neardrop.app
 - tapOn: 'Restaurant'
 - tapOn:
     id: 'btn-submit-place'
-- assertVisible: 'Lieux'
+
+# After submit, we land on the Map tab
+- waitForAnimationToEnd
+- assertVisible:
+    id: 'fab-add-place-map'
+
+# Navigate to Places tab to add second place
+- tapOn: 'Lieux'
 
 # Create second place: Bar
-- tapOn: 'Lieux'
 - tapOn:
     id: 'fab-add-place'
 - tapOn:
@@ -58,7 +64,11 @@ appId: com.neardrop.app
 - tapOn: 'Bar'
 - tapOn:
     id: 'btn-submit-place'
-- assertVisible: 'Lieux'
+
+# After submit, we land on the Map tab again
+- waitForAnimationToEnd
+- assertVisible:
+    id: 'fab-add-place-map'
 
 # Go to Places list
 - tapOn: 'Lieux'

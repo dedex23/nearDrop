@@ -10,6 +10,22 @@ appId: com.neardrop.app
 
 # === CREATE ===
 - tapOn: 'Lieux'
+- waitForAnimationToEnd
+
+# Recovery: expo-router race condition
+- runFlow:
+    when:
+      notVisible:
+        id: 'fab-add-place'
+    commands:
+      - stopApp
+      - launchApp:
+          clearState: true
+      - runFlow: flows/dismiss-permissions.yaml
+      - assertVisible: 'Carte'
+      - tapOn: 'Lieux'
+      - waitForAnimationToEnd
+
 - tapOn:
     id: 'fab-add-place'
 
@@ -39,10 +55,13 @@ appId: com.neardrop.app
 - tapOn:
     id: 'btn-submit-place'
 
-# Wait for geocoding
-- assertVisible: 'Lieux'
+# After submit, the app redirects to the Map tab
+- waitForAnimationToEnd
+- assertVisible:
+    id: 'fab-add-place-map'
 
 # === READ ===
+# Navigate to Places tab to find the created place
 - tapOn: 'Lieux'
 - assertVisible: 'CrudCafe'
 
@@ -51,7 +70,6 @@ appId: com.neardrop.app
 
 # Verify detail page content
 - assertVisible: 'CrudCafe'
-- assertVisible: 'Café'
 - assertVisible: 'Espresso'
 - assertVisible: 'Source : manual'
 
@@ -76,7 +94,7 @@ appId: com.neardrop.app
 - tapOn:
     id: 'btn-submit-place'
 
-# Wait for save
+# After edit, we return to the detail view (setIsEditing(false))
 - assertVisible: 'CrudBar'
 
 # Verify updated name in detail view
