@@ -156,14 +156,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     gap: 8,
   },
-  categoryChip: {
-    height: 28,
-    justifyContent: 'center',
-  },
-  visitedChip: {
-    height: 28,
-    justifyContent: 'center',
-  },
+  categoryChip: {},
+  visitedChip: {},
   inactiveLabel: {
     color: '#E65100',
     fontStyle: 'italic',
