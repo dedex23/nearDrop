@@ -1,11 +1,12 @@
 import { checkGeofences, _resetGeofenceLock } from './geofencing';
-import { getActivePlaces, markNotified } from '@/db/queries';
+import { getActivePlaces, getAllCategories, markNotified } from '@/db/queries';
 import { sendProximityNotification, sendGroupedNotification } from './notifications';
 import { useSettingsStore } from '@/stores/settings-store';
 import type { Place } from '@/types';
 
 jest.mock('@/db/queries', () => ({
   getActivePlaces: jest.fn(),
+  getAllCategories: jest.fn(),
   markNotified: jest.fn(),
 }));
 
@@ -15,6 +16,7 @@ jest.mock('./notifications', () => ({
 }));
 
 const mockGetActivePlaces = getActivePlaces as jest.MockedFunction<typeof getActivePlaces>;
+const mockGetAllCategories = getAllCategories as jest.MockedFunction<typeof getAllCategories>;
 const mockMarkNotified = markNotified as jest.MockedFunction<typeof markNotified>;
 const mockSendProximity = sendProximityNotification as jest.MockedFunction<
   typeof sendProximityNotification
@@ -32,7 +34,7 @@ function makePlace(overrides: Partial<Place> = {}): Place {
     address: '1 Rue de Test',
     latitude: 48.8566,
     longitude: 2.3522,
-    category: 'restaurant',
+    categoryId: 'cat-restaurant',
     tags: [],
     notes: '',
     sourceType: 'manual',
@@ -64,7 +66,10 @@ beforeEach(() => {
   jest.useRealTimers();
   _resetGeofenceLock();
 
-  // Default settings mock
+  // Default mocks
+  mockGetAllCategories.mockResolvedValue([
+    { id: 'cat-restaurant', name: 'Restaurant', color: '#FF5722', icon: 'food', sortOrder: 0, createdAt: new Date() },
+  ]);
   jest.spyOn(useSettingsStore, 'getState').mockReturnValue(defaultSettings());
 });
 
@@ -244,7 +249,8 @@ describe('checkGeofences', () => {
       await checkGeofences(48.8566, 2.3522);
       expect(mockSendProximity).toHaveBeenCalledWith(
         expect.objectContaining({ id: 'place-1' }),
-        expect.any(Number)
+        expect.any(Number),
+        'Restaurant'
       );
     });
 
