@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useColorScheme, View, Text as RNText, ScrollView as SV } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Stack, SplashScreen, useRouter } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';
@@ -120,10 +121,13 @@ export default function RootLayout() {
     return colorScheme === 'dark' ? darkTheme : lightTheme;
   }, [themeMode, colorScheme]);
 
+  const isDark = activeTheme.dark;
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ShareIntentProvider>
         <PaperProvider theme={activeTheme}>
+          <StatusBar style={isDark ? 'light' : 'dark'} />
           <RootLayoutInner />
         </PaperProvider>
       </ShareIntentProvider>
