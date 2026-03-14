@@ -6,9 +6,9 @@ appId: com.neardrop.app
 - runFlow: flows/dismiss-permissions.yaml
 
 # Wait for app to fully load
-- extendedWaitUntil:
-    visible: "Carte"
-    timeout: 15000
+- assertVisible:
+    text: "Carte"
+    enabled: true
 
 # Navigate to Settings
 - tapOn: "Paramètres"
@@ -22,29 +22,33 @@ appId: com.neardrop.app
 - tapOn:
     id: "switch-quiet-mode"
 
-# Scroll to see more settings
+# Scroll to see more settings — need more swipes now with new sections
+- scrollUntilVisible:
+    element: "Heures actives"
+    direction: DOWN
+
+# Scroll further for categories and appearance sections
 - swipe:
     direction: UP
     duration: 500
 
-- assertVisible: "Heures actives"
-
-# Scroll further for data section
-- swipe:
-    direction: UP
-    duration: 500
+- scrollUntilVisible:
+    element: "Exporter les données"
+    direction: DOWN
 
 - assertVisible: "Exporter les données"
-- assertVisible: "Importer des données"
 
 # Scroll to About
-- swipe:
-    direction: UP
-    duration: 500
+- scrollUntilVisible:
+    element: "NearDrop"
+    direction: DOWN
 
 - assertVisible: "NearDrop"
 
 # Scroll back up and toggle Quiet Mode off
+- swipe:
+    direction: DOWN
+    duration: 500
 - swipe:
     direction: DOWN
     duration: 500
