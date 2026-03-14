@@ -16,7 +16,7 @@ export const CATEGORY_ICON_OPTIONS = [
   'ice-cream',
   'cake',
   'beer',
-  'wine',
+  'glass-wine',
   'tea',
   'cup',
   'cart',
