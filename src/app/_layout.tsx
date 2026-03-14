@@ -93,6 +93,7 @@ function RootLayoutInner() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="place" />
       <Stack.Screen name="import" />
+      <Stack.Screen name="categories" />
       <Stack.Screen name="share-intent" options={{ presentation: 'modal' }} />
     </Stack>
   );
