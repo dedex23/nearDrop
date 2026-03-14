@@ -13,7 +13,7 @@ interface PlaceBottomSheetProps {
 }
 
 export const PlaceBottomSheet = forwardRef<BottomSheet, PlaceBottomSheetProps>(
-  ({ place, onDismiss }, ref) => {
+  function PlaceBottomSheet({ place, onDismiss }, ref) {
     const router = useRouter();
     const categories = useAppStore((s) => s.categories);
     const userLocation = useAppStore((s) => s.userLocation);
