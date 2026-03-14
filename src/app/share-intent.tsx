@@ -72,10 +72,7 @@ export default function ShareIntentScreen() {
   const handleSubmit = async (data: PlaceInsert) => {
     const place = await addPlace(data);
     resetShareIntent();
-    router.replace({
-      pathname: '/(tabs)/map',
-      params: { lat: place.latitude, lng: place.longitude },
-    } as never);
+    router.back();
   };
 
   const handleCancel = () => {
