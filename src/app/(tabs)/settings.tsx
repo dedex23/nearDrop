@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet, Alert, Share } from 'react-native';
-import { List, Switch, Text, Divider } from 'react-native-paper';
+import { List, Switch, Text, Divider, SegmentedButtons } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
+import { useRouter } from 'expo-router';
 import { useSettingsStore } from '@/stores/settings-store';
 import { useAppStore } from '@/stores/app-store';
 import { startBackgroundLocation, stopBackgroundLocation } from '@/services/location';
 import * as queries from '@/db/queries';
+import type { ThemeMode } from '@/types';
 
 const COOLDOWN_OPTIONS = [
   { label: '1 heure', value: 1 },
@@ -16,8 +18,10 @@ const COOLDOWN_OPTIONS = [
 ];
 
 export default function SettingsScreen() {
+  const router = useRouter();
   const settings = useSettingsStore();
   const places = useAppStore((s) => s.places);
+  const categories = useAppStore((s) => s.categories);
   const [cooldownIndex, setCooldownIndex] = useState(() => {
     const idx = COOLDOWN_OPTIONS.findIndex((o) => o.value === settings.cooldownHours);
     return idx >= 0 ? idx : 3; // default to 24h
@@ -192,6 +196,35 @@ export default function SettingsScreen() {
       <Divider />
 
       <List.Section>
+        <List.Subheader>Catégories</List.Subheader>
+        <List.Item
+          title="Gérer les catégories"
+          description={`${categories.length} catégories`}
+          left={(props) => <List.Icon {...props} icon="shape" />}
+          onPress={() => router.push('/categories' as never)}
+        />
+      </List.Section>
+
+      <Divider />
+
+      <List.Section>
+        <List.Subheader>Apparence</List.Subheader>
+        <View style={styles.themeButtons}>
+          <SegmentedButtons
+            value={settings.themeMode}
+            onValueChange={(v) => settings.updateSettings({ themeMode: v as ThemeMode })}
+            buttons={[
+              { value: 'system', label: 'Auto' },
+              { value: 'light', label: 'Clair' },
+              { value: 'dark', label: 'Sombre' },
+            ]}
+          />
+        </View>
+      </List.Section>
+
+      <Divider />
+
+      <List.Section>
         <List.Subheader>Données</List.Subheader>
 
         <List.Item
@@ -239,5 +272,9 @@ const styles = StyleSheet.create({
   },
   slider: {
     marginHorizontal: 0,
+  },
+  themeButtons: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
 });
