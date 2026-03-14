@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { ActivityIndicator, Text, useTheme } from 'react-native-paper';
 import { useShareIntentContext } from 'expo-share-intent';
@@ -20,7 +20,7 @@ export default function ShareIntentScreen() {
   const hasStartedParsing = useRef(false);
 
   useEffect(() => {
-    console.log('[NearDrop] shareIntent:', JSON.stringify(shareIntent));
+    if (__DEV__) console.log('[NearDrop] shareIntent:', JSON.stringify(shareIntent));
 
     // Ignore empty updates — the lib may reset shareIntent after the initial delivery
     if (!shareIntent?.text && !shareIntent?.webUrl) return;
@@ -70,9 +70,13 @@ export default function ShareIntentScreen() {
   }, [isParsing]);
 
   const handleSubmit = async (data: PlaceInsert) => {
-    const place = await addPlace(data);
-    resetShareIntent();
-    router.back();
+    try {
+      const place = await addPlace(data);
+      resetShareIntent();
+      router.back();
+    } catch (error) {
+      Alert.alert('Erreur', "Impossible d'ajouter le lieu.");
+    }
   };
 
   const handleCancel = () => {

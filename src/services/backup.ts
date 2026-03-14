@@ -35,7 +35,7 @@ async function performBackup(): Promise<void> {
     const dbFile = new File(Paths.document, 'SQLite', 'neardrop.db');
 
     if (!dbFile.exists) {
-      console.warn('[NearDrop] Database file not found, skipping backup');
+      if (__DEV__) console.warn('[NearDrop] Database file not found, skipping backup');
       return;
     }
 
@@ -61,7 +61,7 @@ async function performBackup(): Promise<void> {
       }
     }
 
-    console.log(`[NearDrop] Backup created: ${fileName}`);
+    if (__DEV__) console.log(`[NearDrop] Backup created: ${fileName}`);
   } catch (error) {
     console.error('[NearDrop] Backup failed:', error);
   }

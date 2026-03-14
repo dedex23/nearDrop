@@ -257,16 +257,16 @@ async function enrichSocialShare(
 ): Promise<Partial<ParsedShareData>> {
   const name = extractNameBeforeUrl(rawText, url);
   let notes = cleanTextForNotes(rawText, url);
-  console.log(`[NearDrop] enrichSocialShare: sourceType=${sourceType} name="${name}" url=${url}`);
+  if (__DEV__) console.log(`[NearDrop] enrichSocialShare: sourceType=${sourceType} name="${name}" url=${url}`);
 
   // Step 1: Try to extract location from the shared text
   const textAddress = extractAddressFromText(rawText);
   const textHint = !textAddress ? extractLocationHintFromText(rawText) : null;
-  console.log(`[NearDrop] text extraction: address="${textAddress}" hint="${textHint}"`);
+  if (__DEV__) console.log(`[NearDrop] text extraction: address="${textAddress}" hint="${textHint}"`);
 
   // Step 2: Fetch OG metadata from the page
   const og = await fetchOgMetadata(url);
-  console.log(`[NearDrop] OG metadata:`, JSON.stringify(og));
+  if (__DEV__) console.log(`[NearDrop] OG metadata:`, JSON.stringify(og));
 
   // Use OG description as notes if we don't have any
   if (!notes && og?.description) {
@@ -277,7 +277,7 @@ async function enrichSocialShare(
 
   // Step 2a: Direct coordinates from OG tags (Facebook Places)
   if (og?.latitude != null && og?.longitude != null) {
-    console.log(`[NearDrop] using OG coordinates: ${og.latitude},${og.longitude}`);
+    if (__DEV__) console.log(`[NearDrop] using OG coordinates: ${og.latitude},${og.longitude}`);
     return {
       name: name || extractPlaceNameFromOgTitle(og.title) || og.title || defaultName,
       latitude: og.latitude,
@@ -292,17 +292,17 @@ async function enrichSocialShare(
   const ogDescription = og?.description ?? '';
   const ogAddress = extractAddressFromText(ogDescription);
   const ogHint = !ogAddress ? extractLocationHintFromText(ogDescription) : null;
-  console.log(`[NearDrop] OG description extraction: address="${ogAddress}" hint="${ogHint}"`);
+  if (__DEV__) console.log(`[NearDrop] OG description extraction: address="${ogAddress}" hint="${ogHint}"`);
 
   const bestCandidate = textAddress || textHint || ogAddress || ogHint;
-  console.log(`[NearDrop] bestCandidate for geocoding: "${bestCandidate}"`);
+  if (__DEV__) console.log(`[NearDrop] bestCandidate for geocoding: "${bestCandidate}"`);
 
   // Step 3: Geocode the best candidate, biased near user location
   if (bestCandidate) {
     const userLocation = useAppStore.getState().userLocation;
-    console.log(`[NearDrop] geocoding with userLocation:`, userLocation ? `${userLocation.latitude},${userLocation.longitude}` : 'null');
+    if (__DEV__) console.log(`[NearDrop] geocoding with userLocation:`, userLocation ? `${userLocation.latitude},${userLocation.longitude}` : 'null');
     const geocoded = await geocodeAddress(bestCandidate, userLocation);
-    console.log(`[NearDrop] geocode result:`, JSON.stringify(geocoded));
+    if (__DEV__) console.log(`[NearDrop] geocode result:`, JSON.stringify(geocoded));
     if (geocoded) {
       return {
         name: name || extractPlaceNameFromOgTitle(og?.title ?? null) || og?.title || defaultName,
@@ -316,7 +316,7 @@ async function enrichSocialShare(
     }
   }
 
-  console.log(`[NearDrop] no location found, returning without coordinates`);
+  if (__DEV__) console.log(`[NearDrop] no location found, returning without coordinates`);
   // Use OG title as name if available
   return {
     name: name || extractPlaceNameFromOgTitle(og?.title ?? null) || og?.title || defaultName,

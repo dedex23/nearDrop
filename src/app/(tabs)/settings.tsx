@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, ScrollView, StyleSheet, Alert, type AlertButton } from 'react-native';
 import { List, Switch, Text, Divider, SegmentedButtons, useTheme } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { useRouter } from 'expo-router';
@@ -46,7 +46,7 @@ export default function SettingsScreen() {
       return;
     }
 
-    const buttons = backups.map((b) => ({
+    const buttons: AlertButton[] = backups.map((b) => ({
       text: b.date.toLocaleString(),
       onPress: async () => {
         const success = restoreBackup(b.name);
@@ -59,7 +59,7 @@ export default function SettingsScreen() {
         }
       },
     }));
-    buttons.unshift({ text: 'Annuler', onPress: async () => {}, style: 'cancel' } as any);
+    buttons.unshift({ text: 'Annuler', style: 'cancel' });
 
     Alert.alert('Restaurer une sauvegarde', 'Choisissez une sauvegarde :', buttons);
   };

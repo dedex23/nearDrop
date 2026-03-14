@@ -80,7 +80,6 @@ export default function MapScreen() {
       </View>
 
       <MapViewComponent
-        key={filteredPlaces.map((p) => p.id).join(',')}
         places={filteredPlaces}
         userLocation={userLocation}
         initialRegion={initialRegion}
