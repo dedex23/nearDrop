@@ -6,7 +6,7 @@ CREATE TABLE `categories` (
 	`sort_order` integer DEFAULT 0 NOT NULL,
 	`created_at` integer NOT NULL
 );
-
+--> statement-breakpoint
 INSERT INTO `categories` (`id`, `name`, `color`, `icon`, `sort_order`, `created_at`) VALUES
 	('cat-restaurant', 'Restaurant', '#E53935', 'silverware-fork-knife', 0, strftime('%s', 'now') * 1000),
 	('cat-bar', 'Bar', '#8E24AA', 'glass-cocktail', 1, strftime('%s', 'now') * 1000),
@@ -15,7 +15,7 @@ INSERT INTO `categories` (`id`, `name`, `color`, `icon`, `sort_order`, `created_
 	('cat-culture', 'Culture', '#FB8C00', 'palette', 4, strftime('%s', 'now') * 1000),
 	('cat-sport', 'Sport', '#43A047', 'run', 5, strftime('%s', 'now') * 1000),
 	('cat-other', 'Autre', '#757575', 'map-marker', 6, strftime('%s', 'now') * 1000);
-
+--> statement-breakpoint
 CREATE TABLE `places_new` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE `places_new` (
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL
 );
-
+--> statement-breakpoint
 INSERT INTO `places_new` (`id`, `name`, `address`, `latitude`, `longitude`, `category_id`, `tags`, `notes`, `source_type`, `source_url`, `image_url`, `radius`, `is_active`, `notified_at`, `created_at`, `updated_at`)
 SELECT `id`, `name`, `address`, `latitude`, `longitude`,
 	CASE `category`
@@ -48,11 +48,13 @@ SELECT `id`, `name`, `address`, `latitude`, `longitude`,
 	END,
 	`tags`, `notes`, `source_type`, `source_url`, `image_url`, `radius`, `is_active`, `notified_at`, `created_at`, `updated_at`
 FROM `places`;
-
+--> statement-breakpoint
 DROP TABLE `places`;
-
+--> statement-breakpoint
 ALTER TABLE `places_new` RENAME TO `places`;
-
+--> statement-breakpoint
 CREATE INDEX `idx_places_is_active` ON `places` (`is_active`);
+--> statement-breakpoint
 CREATE INDEX `idx_places_category` ON `places` (`category_id`);
+--> statement-breakpoint
 CREATE INDEX `idx_places_location` ON `places` (`latitude`, `longitude`);

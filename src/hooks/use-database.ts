@@ -4,5 +4,11 @@ import migrations from '@/db/migrations/migrations';
 
 export function useDatabase() {
   const { success, error } = useMigrations(db, migrations);
+  if (error) {
+    console.error('[NearDrop][DB] Migration error:', error);
+  }
+  if (success) {
+    console.log('[NearDrop][DB] Migrations OK');
+  }
   return { isReady: success, error };
 }

@@ -6,9 +6,9 @@ appId: com.neardrop.app
 - runFlow: flows/dismiss-permissions.yaml
 
 # Wait for app to fully load
-- extendedWaitUntil:
-    visible: "Carte"
-    timeout: 15000
+- assertVisible:
+    text: "Carte"
+    enabled: true
 
 # Navigate to Settings
 - tapOn: "Paramètres"
@@ -21,9 +21,7 @@ appId: com.neardrop.app
 - tapOn: "Gérer les catégories"
 
 # Verify default categories are visible
-- extendedWaitUntil:
-    visible: "Restaurant"
-    timeout: 10000
+- assertVisible: "Restaurant"
 - assertVisible: "Bar"
 
 # Add a new category
@@ -31,9 +29,7 @@ appId: com.neardrop.app
     id: "fab-add-category"
 
 # Fill in category name
-- extendedWaitUntil:
-    visible: "Nom"
-    timeout: 10000
+- assertVisible: "Nom"
 - tapOn: "Nom"
 - inputText: "Test Cat"
 - hideKeyboard
@@ -45,8 +41,6 @@ appId: com.neardrop.app
 - tapOn: "Créer"
 
 # Verify we are back on the categories list and the new category appears
-- extendedWaitUntil:
-    visible: "Test Cat"
-    timeout: 10000
+- assertVisible: "Test Cat"
 - assertVisible: "Restaurant"
 - assertVisible: "Bar"

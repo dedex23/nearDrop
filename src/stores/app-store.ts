@@ -97,6 +97,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   loadCategories: async () => {
     try {
       const categories = await queries.getAllCategories();
+      console.log('[NearDrop] Loaded categories:', categories.length);
       set({ categories });
     } catch (error) {
       console.error('[NearDrop] Failed to load categories:', error);
