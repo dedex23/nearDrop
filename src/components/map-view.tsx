@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
-import MapView, { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
+import ClusteredMapView from 'react-native-map-clustering';
+import { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useAppStore } from '@/stores/app-store';
 import { haversineDistance, formatDistance } from '@/utils/distance';
 import type { Place } from '@/types';
@@ -51,12 +52,15 @@ export default function MapViewComponent({
   );
 
   return (
-    <MapView
+    <ClusteredMapView
       provider={PROVIDER_GOOGLE}
       style={styles.map}
       showsUserLocation
       showsMyLocationButton
       initialRegion={initialRegion}
+      clusterColor="#6200EE"
+      radius={50}
+      minPoints={2}
     >
       {placesWithDistance.map(({ place, distance, category }) => {
         const color = category?.color ?? '#757575';
@@ -84,7 +88,7 @@ export default function MapViewComponent({
           </React.Fragment>
         );
       })}
-    </MapView>
+    </ClusteredMapView>
   );
 }
 
