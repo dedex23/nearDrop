@@ -1,0 +1,127 @@
+import { Paths, File, Directory } from 'expo-file-system';
+
+const BACKUP_DIR_NAME = 'backups';
+const MAX_BACKUPS = 3;
+const DEBOUNCE_MS = 30_000;
+
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+export function getBackupFileName(): string {
+  const now = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  return `neardrop-backup-${now}.db`;
+}
+
+export function shouldRotateBackups(files: string[], maxCount: number): string[] {
+  if (files.length <= maxCount) return [];
+  const sorted = [...files].sort();
+  return sorted.slice(0, files.length - maxCount);
+}
+
+function getBackupDir(): Directory {
+  return new Directory(Paths.document, BACKUP_DIR_NAME);
+}
+
+function ensureBackupDir(): void {
+  const dir = getBackupDir();
+  if (!dir.exists) {
+    dir.create({ intermediates: true });
+  }
+}
+
+function performBackup(): void {
+  try {
+    ensureBackupDir();
+
+    // NOTE: Ideally we would run PRAGMA wal_checkpoint(FULL) before copying
+    // to flush the WAL. This is not done here to keep the service decoupled
+    // from the database client. The caller can checkpoint before scheduling.
+    const dbFile = new File(Paths.document, 'SQLite', 'neardrop.db');
+
+    if (!dbFile.exists) {
+      console.warn('[NearDrop] Database file not found, skipping backup');
+      return;
+    }
+
+    const fileName = getBackupFileName();
+    const destFile = new File(getBackupDir(), fileName);
+
+    dbFile.copy(destFile);
+
+    // Rotate old backups
+    const backupDir = getBackupDir();
+    const entries = backupDir.list();
+    const backupFiles = entries
+      .filter((e): e is File => e instanceof File)
+      .map((f) => f.name)
+      .filter((name) => name.startsWith('neardrop-backup-') && name.endsWith('.db'));
+
+    const toDelete = shouldRotateBackups(backupFiles, MAX_BACKUPS);
+
+    for (const name of toDelete) {
+      const file = new File(backupDir, name);
+      if (file.exists) {
+        file.delete();
+      }
+    }
+
+    console.log(`[NearDrop] Backup created: ${fileName}`);
+  } catch (error) {
+    console.error('[NearDrop] Backup failed:', error);
+  }
+}
+
+export function scheduleBackup(): void {
+  if (debounceTimer) clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(performBackup, DEBOUNCE_MS);
+}
+
+export function getBackupList(): { name: string; date: Date; size: number }[] {
+  try {
+    ensureBackupDir();
+    const backupDir = getBackupDir();
+    const entries = backupDir.list();
+
+    const backups = entries
+      .filter((e): e is File => e instanceof File)
+      .map((f) => f.name)
+      .filter((name) => name.startsWith('neardrop-backup-') && name.endsWith('.db'))
+      .sort()
+      .reverse();
+
+    const result = [];
+    for (const name of backups) {
+      const file = new File(backupDir, name);
+      if (file.exists) {
+        const dateStr = name
+          .replace('neardrop-backup-', '')
+          .replace('.db', '')
+          .replace(/-(\d{2})-(\d{2})$/, ':$1:$2');
+        result.push({ name, date: new Date(dateStr), size: file.size });
+      }
+    }
+    return result;
+  } catch {
+    return [];
+  }
+}
+
+export function restoreBackup(backupName: string): boolean {
+  try {
+    const backupDir = getBackupDir();
+    const srcFile = new File(backupDir, backupName);
+    const destFile = new File(Paths.document, 'SQLite', 'neardrop.db');
+
+    if (!srcFile.exists) return false;
+
+    srcFile.copy(destFile);
+    return true;
+  } catch (error) {
+    console.error('[NearDrop] Restore failed:', error);
+    return false;
+  }
+}
+
+export function getLastBackupDate(): Date | null {
+  const backups = getBackupList();
+  return backups.length > 0 ? backups[0].date : null;
+}

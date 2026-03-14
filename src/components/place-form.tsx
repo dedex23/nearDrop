@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import { TextInput, Button, Text, HelperText } from 'react-native-paper';
+import { TextInput, Button, Text, HelperText, useTheme } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { CategoryPicker } from './category-chip';
 import { geocodeAddress } from '@/services/geocoding';
-import type { Category, PlaceInsert } from '@/types';
+import type { PlaceInsert } from '@/types';
 
 interface PlaceFormProps {
   initialValues?: Partial<PlaceInsert>;
@@ -13,10 +13,10 @@ interface PlaceFormProps {
 }
 
 export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Enregistrer' }: PlaceFormProps) {
+  const theme = useTheme();
   const [name, setName] = useState(initialValues?.name ?? '');
   const [address, setAddress] = useState(initialValues?.address ?? '');
-  const [category, setCategory] = useState<Category>(initialValues?.category ?? 'other');
-  const [tags, setTags] = useState(initialValues?.tags?.join(', ') ?? '');
+  const [categoryId, setCategoryId] = useState(initialValues?.categoryId ?? 'cat-other');
   const [notes, setNotes] = useState(initialValues?.notes ?? '');
   const [radius, setRadius] = useState(initialValues?.radius ?? 150);
   const [latitude, setLatitude] = useState(initialValues?.latitude ?? 0);
@@ -73,11 +73,7 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Enregistrer'
       await onSubmit({
         name: name.trim(),
         address: address.trim(),
-        category,
-        tags: tags
-          .split(',')
-          .map((t) => t.trim())
-          .filter(Boolean),
+        categoryId,
         notes: notes.trim(),
         radius,
         latitude: finalLat,
@@ -93,7 +89,7 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Enregistrer'
   };
 
   return (
-    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
+    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} keyboardShouldPersistTaps="handled">
       <TextInput
         testID="input-name"
         label="Nom *"
@@ -138,17 +134,7 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Enregistrer'
       <Text variant="labelLarge" style={styles.sectionLabel}>
         Catégorie
       </Text>
-      <CategoryPicker value={category} onChange={setCategory} />
-
-      <TextInput
-        testID="input-tags"
-        label="Tags (séparés par des virgules)"
-        value={tags}
-        onChangeText={setTags}
-        mode="outlined"
-        style={styles.input}
-        placeholder="ex. brunch, terrasse, rendez-vous"
-      />
+      <CategoryPicker value={categoryId} onChange={setCategoryId} />
 
       <TextInput
         testID="input-notes"
@@ -170,9 +156,9 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Enregistrer'
         minimumValue={50}
         maximumValue={500}
         step={10}
-        minimumTrackTintColor="#6200EE"
-        maximumTrackTintColor="#E0E0E0"
-        thumbTintColor="#6200EE"
+        minimumTrackTintColor={theme.colors.primary}
+        maximumTrackTintColor={theme.colors.surfaceVariant}
+        thumbTintColor={theme.colors.primary}
         style={styles.slider}
       />
 

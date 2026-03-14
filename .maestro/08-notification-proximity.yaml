@@ -1,0 +1,67 @@
+appId: com.neardrop.app
+---
+# Test: enable tracking, add a place, verify it appears in list
+- launchApp:
+    clearState: true
+- runFlow: flows/dismiss-permissions.yaml
+
+# Wait for app to fully load
+- assertVisible:
+    text: "Carte"
+    enabled: true
+
+# Enable tracking in settings
+- tapOn: "Paramètres"
+- assertVisible: "Suivi en arrière-plan"
+- tapOn:
+    id: "switch-tracking"
+
+# Navigate to Places and add a place
+- tapOn: "Lieux"
+- waitForAnimationToEnd
+
+# Recovery: expo-router race condition
+- runFlow:
+    when:
+      notVisible:
+        id: "fab-add-place"
+    commands:
+      - stopApp
+      - launchApp:
+          clearState: true
+      - runFlow: flows/dismiss-permissions.yaml
+      - assertVisible: "Carte"
+      - tapOn: "Paramètres"
+      - assertVisible: "Suivi en arrière-plan"
+      - tapOn:
+          id: "switch-tracking"
+      - tapOn: "Lieux"
+      - waitForAnimationToEnd
+
+- tapOn:
+    id: "fab-add-place"
+
+# Fill in place details
+- tapOn:
+    id: "input-name"
+- inputText: "Test Notif Place"
+- hideKeyboard
+
+- tapOn:
+    id: "input-address"
+- inputText: "Tour Eiffel, Paris"
+- hideKeyboard
+
+# Select Restaurant category
+- tapOn: "Restaurant"
+
+# Submit the place
+- tapOn:
+    id: "btn-submit-place"
+
+# Wait for geocoding and navigation back
+- waitForAnimationToEnd
+
+# Verify the place was created
+- tapOn: "Lieux"
+- assertVisible: "Test Notif Place"

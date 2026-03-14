@@ -6,9 +6,7 @@ appId: com.neardrop.app
 - runFlow: flows/dismiss-permissions.yaml
 
 # Wait for app to fully load
-- extendedWaitUntil:
-    visible: 'Carte'
-    timeout: 15000
+- assertVisible: 'Carte'
 
 # Navigate to Places tab
 - tapOn: 'Lieux'
@@ -24,24 +22,18 @@ appId: com.neardrop.app
       - launchApp:
           clearState: true
       - runFlow: flows/dismiss-permissions.yaml
-      - extendedWaitUntil:
-          visible: 'Carte'
-          timeout: 15000
+      - assertVisible: 'Carte'
       - tapOn: 'Lieux'
 
-- extendedWaitUntil:
-    visible:
-      id: 'fab-add-place'
-    timeout: 10000
+- assertVisible:
+    id: 'fab-add-place'
 
 # Tap FAB to open the Add Place form
 - tapOn:
     id: 'fab-add-place'
 
 # Verify form is visible
-- extendedWaitUntil:
-    visible: 'Ajouter un lieu'
-    timeout: 10000
+- assertVisible: 'Ajouter un lieu'
 
 # Fill in Name
 - tapOn:
@@ -63,9 +55,7 @@ appId: com.neardrop.app
     id: 'btn-submit-place'
 
 # Wait for geocoding + navigation back (Nominatim can be slow)
-- extendedWaitUntil:
-    visible: 'Lieux'
-    timeout: 15000
+- assertVisible: 'Lieux'
 
 # Navigate to Places tab to see the new place
 - tapOn: 'Lieux'

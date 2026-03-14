@@ -6,13 +6,26 @@ appId: com.neardrop.app
 - runFlow: flows/dismiss-permissions.yaml
 
 # Wait for app to fully load
-- extendedWaitUntil:
-    visible: 'Carte'
-    timeout: 15000
+- assertVisible: 'Carte'
 
 # === SETUP: Create two places with different categories ===
 
 - tapOn: 'Lieux'
+- waitForAnimationToEnd
+
+# Recovery: expo-router race condition
+- runFlow:
+    when:
+      notVisible:
+        id: 'fab-add-place'
+    commands:
+      - stopApp
+      - launchApp:
+          clearState: true
+      - runFlow: flows/dismiss-permissions.yaml
+      - assertVisible: 'Carte'
+      - tapOn: 'Lieux'
+      - waitForAnimationToEnd
 
 # Create first place: Restaurant
 - tapOn:
@@ -28,9 +41,7 @@ appId: com.neardrop.app
 - tapOn: 'Restaurant'
 - tapOn:
     id: 'btn-submit-place'
-- extendedWaitUntil:
-    visible: 'Lieux'
-    timeout: 15000
+- assertVisible: 'Lieux'
 
 # Create second place: Bar
 - tapOn: 'Lieux'
@@ -47,17 +58,13 @@ appId: com.neardrop.app
 - tapOn: 'Bar'
 - tapOn:
     id: 'btn-submit-place'
-- extendedWaitUntil:
-    visible: 'Lieux'
-    timeout: 15000
+- assertVisible: 'Lieux'
 
 # Go to Places list
 - tapOn: 'Lieux'
 
 # Both places should be visible
-- extendedWaitUntil:
-    visible: 'FiltResto'
-    timeout: 10000
+- assertVisible: 'FiltResto'
 - assertVisible: 'FiltBar'
 
 # === SEARCH ===

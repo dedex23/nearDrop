@@ -1,18 +1,19 @@
 import React, { useRef, useState } from 'react';
 import { View, ScrollView, StyleSheet, Alert, Linking } from 'react-native';
-import { Text, Button, Chip, Switch, Divider, IconButton } from 'react-native-paper';
+import { Text, Button, Chip, Switch, Divider, IconButton, useTheme } from 'react-native-paper';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import Slider from '@react-native-community/slider';
 import { useAppStore } from '@/stores/app-store';
 import { PlaceForm } from '@/components/place-form';
-import { CATEGORY_CONFIG } from '@/utils/constants';
 import { haversineDistance, formatDistance } from '@/utils/distance';
 import type { PlaceInsert } from '@/types';
 
 export default function PlaceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const theme = useTheme();
   const places = useAppStore((s) => s.places);
+  const categories = useAppStore((s) => s.categories);
   const updatePlace = useAppStore((s) => s.updatePlace);
   const removePlace = useAppStore((s) => s.removePlace);
   const userLocation = useAppStore((s) => s.userLocation);
@@ -40,7 +41,7 @@ export default function PlaceDetailScreen() {
     );
   }
 
-  const config = CATEGORY_CONFIG[place.category];
+  const category = categories.find((c) => c.id === place.categoryId);
   const distance = userLocation
     ? haversineDistance(
         userLocation.latitude,
@@ -103,8 +104,7 @@ export default function PlaceDetailScreen() {
           initialValues={{
             name: place.name,
             address: place.address,
-            category: place.category,
-            tags: place.tags,
+            categoryId: place.categoryId,
             notes: place.notes,
             radius: place.radius,
             latitude: place.latitude,
@@ -131,30 +131,30 @@ export default function PlaceDetailScreen() {
           ),
         }}
       />
-      <ScrollView style={styles.container}>
+      <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
         <View style={styles.header}>
           <Text variant="headlineMedium">{place.name}</Text>
           <Chip
-            icon={config.icon}
-            style={[styles.categoryChip, { backgroundColor: config.color + '20' }]}
-            textStyle={{ color: config.color }}
+            icon={category?.icon ?? 'map-marker'}
+            style={[styles.categoryChip, { backgroundColor: (category?.color ?? '#757575') + '20' }]}
+            textStyle={{ color: category?.color ?? '#757575' }}
           >
-            {config.label}
+            {category?.name ?? ''}
           </Chip>
         </View>
 
-        <Text variant="bodyLarge" style={styles.address}>
+        <Text variant="bodyLarge" style={{ color: theme.colors.onSurface, marginBottom: 4 }}>
           {place.address}
         </Text>
 
         {distance !== null && (
-          <Text variant="bodyMedium" style={styles.distance}>
+          <Text variant="bodyMedium" style={{ color: theme.colors.primary, marginBottom: 12 }}>
             à {formatDistance(distance)}
           </Text>
         )}
 
         <View style={styles.actions}>
-          <Button mode="contained" icon="navigation" onPress={handleNavigate} style={styles.navButton}>
+          <Button mode="contained" icon="navigation" onPress={handleNavigate} style={[styles.navButton, { backgroundColor: theme.colors.primary }]}>
             Itinéraire
           </Button>
         </View>
@@ -168,7 +168,7 @@ export default function PlaceDetailScreen() {
               testID="switch-active"
               value={place.isActive}
               onValueChange={handleToggleActive}
-              color="#6200EE"
+              color={theme.colors.primary}
             />
           </View>
         </View>
@@ -181,33 +181,18 @@ export default function PlaceDetailScreen() {
             minimumValue={50}
             maximumValue={500}
             step={10}
-            minimumTrackTintColor="#6200EE"
-            maximumTrackTintColor="#E0E0E0"
-            thumbTintColor="#6200EE"
+            minimumTrackTintColor={theme.colors.primary}
+            maximumTrackTintColor={theme.colors.surfaceVariant}
+            thumbTintColor={theme.colors.primary}
           />
         </View>
-
-        {place.tags.length > 0 && (
-          <View style={styles.section}>
-            <Text variant="labelLarge" style={styles.sectionTitle}>
-              Tags
-            </Text>
-            <View style={styles.tagsRow}>
-              {place.tags.map((tag) => (
-                <Chip key={tag} compact style={styles.tag}>
-                  {tag}
-                </Chip>
-              ))}
-            </View>
-          </View>
-        )}
 
         {place.notes ? (
           <View style={styles.section}>
             <Text variant="labelLarge" style={styles.sectionTitle}>
               Notes
             </Text>
-            <Text variant="bodyMedium">{place.notes}</Text>
+            <Text variant="bodyMedium" selectable>{place.notes}</Text>
           </View>
         ) : null}
 
@@ -217,17 +202,17 @@ export default function PlaceDetailScreen() {
           <Text variant="labelLarge" style={styles.sectionTitle}>
             Infos
           </Text>
-          <Text variant="bodySmall" style={styles.meta}>
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 2 }}>
             Source : {place.sourceType}
           </Text>
-          <Text variant="bodySmall" style={styles.meta}>
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 2 }}>
             Coordonnées : {place.latitude.toFixed(5)}, {place.longitude.toFixed(5)}
           </Text>
-          <Text variant="bodySmall" style={styles.meta}>
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 2 }}>
             Ajouté le : {place.createdAt.toLocaleDateString()}
           </Text>
           {place.notifiedAt && (
-            <Text variant="bodySmall" style={styles.meta}>
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 2 }}>
               Dernière notification : {place.notifiedAt.toLocaleDateString()}
             </Text>
           )}
@@ -238,8 +223,8 @@ export default function PlaceDetailScreen() {
           mode="outlined"
           icon="delete"
           onPress={handleDelete}
-          textColor="#B00020"
-          style={styles.deleteButton}
+          textColor={theme.colors.error}
+          style={[styles.deleteButton, { borderColor: theme.colors.error }]}
         >
           Supprimer le lieu
         </Button>
@@ -252,7 +237,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#F5F5F5',
   },
   centered: {
     flex: 1,
@@ -271,14 +255,6 @@ const styles = StyleSheet.create({
   categoryChip: {
     marginLeft: 8,
   },
-  address: {
-    color: '#444',
-    marginBottom: 4,
-  },
-  distance: {
-    color: '#6200EE',
-    marginBottom: 12,
-  },
   actions: {
     flexDirection: 'row',
     gap: 8,
@@ -286,7 +262,6 @@ const styles = StyleSheet.create({
   },
   navButton: {
     flex: 1,
-    backgroundColor: '#6200EE',
   },
   divider: {
     marginVertical: 16,
@@ -302,21 +277,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  tagsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  tag: {
-    backgroundColor: '#E8DEF8',
-  },
-  meta: {
-    color: '#888',
-    marginBottom: 2,
-  },
   deleteButton: {
     marginTop: 8,
     marginBottom: 32,
-    borderColor: '#B00020',
   },
 });

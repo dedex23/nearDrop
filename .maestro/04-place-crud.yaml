@@ -6,9 +6,7 @@ appId: com.neardrop.app
 - runFlow: flows/dismiss-permissions.yaml
 
 # Wait for app to fully load
-- extendedWaitUntil:
-    visible: 'Carte'
-    timeout: 15000
+- assertVisible: 'Carte'
 
 # === CREATE ===
 - tapOn: 'Lieux'
@@ -42,9 +40,7 @@ appId: com.neardrop.app
     id: 'btn-submit-place'
 
 # Wait for geocoding
-- extendedWaitUntil:
-    visible: 'Lieux'
-    timeout: 15000
+- assertVisible: 'Lieux'
 
 # === READ ===
 - tapOn: 'Lieux'
@@ -81,9 +77,7 @@ appId: com.neardrop.app
     id: 'btn-submit-place'
 
 # Wait for save
-- extendedWaitUntil:
-    visible: 'CrudBar'
-    timeout: 15000
+- assertVisible: 'CrudBar'
 
 # Verify updated name in detail view
 - assertVisible: 'CrudBar'
