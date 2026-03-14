@@ -255,7 +255,7 @@ async function enrichSocialShare(
   defaultName: string
 ): Promise<Partial<ParsedShareData>> {
   const name = extractNameBeforeUrl(rawText, url);
-  const notes = cleanTextForNotes(rawText, url);
+  let notes = cleanTextForNotes(rawText, url);
   console.log(`[NearDrop] enrichSocialShare: sourceType=${sourceType} name="${name}" url=${url}`);
 
   // Step 1: Try to extract location from the shared text
@@ -267,11 +267,18 @@ async function enrichSocialShare(
   const og = await fetchOgMetadata(url);
   console.log(`[NearDrop] OG metadata:`, JSON.stringify(og));
 
+  // Use OG description as notes if we don't have any
+  if (!notes && og?.description) {
+    // Clean up Instagram OG description format: "N likes, M comments - user on date: \"caption\""
+    const captionMatch = og.description.match(/:\s*"(.+?)"\s*\.?\s*$/s);
+    notes = captionMatch ? captionMatch[1].trim() : og.description;
+  }
+
   // Step 2a: Direct coordinates from OG tags (Facebook Places)
   if (og?.latitude != null && og?.longitude != null) {
     console.log(`[NearDrop] using OG coordinates: ${og.latitude},${og.longitude}`);
     return {
-      name: name || og.title || defaultName,
+      name: name || extractPlaceNameFromOgTitle(og.title) || og.title || defaultName,
       latitude: og.latitude,
       longitude: og.longitude,
       sourceType,
@@ -295,7 +302,7 @@ async function enrichSocialShare(
     console.log(`[NearDrop] geocode result:`, JSON.stringify(geocoded));
     if (geocoded) {
       return {
-        name: name || og?.title || defaultName,
+        name: name || extractPlaceNameFromOgTitle(og?.title ?? null) || og?.title || defaultName,
         address: bestCandidate,
         latitude: geocoded.latitude,
         longitude: geocoded.longitude,
@@ -309,7 +316,7 @@ async function enrichSocialShare(
   console.log(`[NearDrop] no location found, returning without coordinates`);
   // Use OG title as name if available
   return {
-    name: name || og?.title || defaultName,
+    name: name || extractPlaceNameFromOgTitle(og?.title ?? null) || og?.title || defaultName,
     address: '',
     sourceType,
     sourceUrl: url,
@@ -392,6 +399,39 @@ function extractNameBeforeUrl(text: string, url: string): string {
   const lines = before.split('\n').filter((l) => l.trim());
   const name = lines[lines.length - 1]?.trim() || '';
   return name.substring(0, 80);
+}
+
+/** Extract a short place name from a long OG title (e.g. Instagram post caption) */
+function extractPlaceNameFromOgTitle(ogTitle: string | null): string {
+  if (!ogTitle) return '';
+
+  // Try to find a 📍 location pin — text after it is usually the place name
+  const pinMatch = ogTitle.match(/📍\s*(.+)/);
+  if (pinMatch) {
+    // Take first line after pin, strip trailing emoji/stars/hashtags
+    const afterPin = pinMatch[1].split('\n')[0].trim();
+    const cleaned = afterPin.replace(/[⭐️#].*/g, '').trim();
+    if (cleaned.length > 0 && cleaned.length <= 80) return cleaned;
+  }
+
+  // Instagram OG title format: "Username on Instagram: \"caption...\""
+  // Extract just the username part as fallback
+  const igMatch = ogTitle.match(/^(.+?)\s+on Instagram:/);
+  if (igMatch) {
+    // Don't use the username as place name — it's not useful
+    // Instead, try first meaningful line of the caption
+    const captionMatch = ogTitle.match(/on Instagram: "(.+?)[\n"]/);
+    if (captionMatch) {
+      const firstLine = captionMatch[1].trim();
+      // Only use if it's short enough to be a name (not a full description)
+      if (firstLine.length <= 60) return firstLine;
+    }
+  }
+
+  // If title is short enough, use it directly
+  if (ogTitle.length <= 60) return ogTitle;
+
+  return '';
 }
 
 /** Remove the URL from text and return the rest as notes */
