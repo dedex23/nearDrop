@@ -8,19 +8,9 @@ import type { Place, PlaceInsert, Category, CategoryInsert, SourceType } from '@
 type PlaceRow = typeof places.$inferSelect;
 type CategoryRow = typeof categories.$inferSelect;
 
-function safeParseTags(raw: string): string[] {
-  try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
 function rowToPlace(row: PlaceRow): Place {
   return {
     ...row,
-    tags: safeParseTags(row.tags),
     sourceType: (SOURCE_TYPES as readonly string[]).includes(row.sourceType)
       ? (row.sourceType as SourceType)
       : 'manual',
@@ -128,7 +118,6 @@ export async function insertPlace(data: PlaceInsert): Promise<Place> {
   const row = {
     ...data,
     id,
-    tags: JSON.stringify(data.tags),
     createdAt: now,
     updatedAt: now,
     notifiedAt: null,
@@ -139,9 +128,6 @@ export async function insertPlace(data: PlaceInsert): Promise<Place> {
 
 export async function updatePlace(id: string, data: Partial<PlaceInsert>): Promise<void> {
   const updates: Record<string, unknown> = { ...data, updatedAt: new Date() };
-  if (data.tags) {
-    updates.tags = JSON.stringify(data.tags);
-  }
   await db.update(places).set(updates).where(eq(places.id, id));
 }
 

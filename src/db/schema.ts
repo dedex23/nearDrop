@@ -16,7 +16,6 @@ export const places = sqliteTable('places', {
   latitude: real('latitude').notNull(),
   longitude: real('longitude').notNull(),
   categoryId: text('category_id').notNull(),
-  tags: text('tags').notNull().default('[]'), // JSON-encoded string[]
   notes: text('notes').notNull().default(''),
   sourceType: text('source_type', {
     enum: ['manual', 'share_intent', 'instagram', 'facebook', 'google_maps', 'csv'],

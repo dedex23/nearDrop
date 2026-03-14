@@ -104,7 +104,6 @@ export default function PlaceDetailScreen() {
             name: place.name,
             address: place.address,
             categoryId: place.categoryId,
-            tags: place.tags,
             notes: place.notes,
             radius: place.radius,
             latitude: place.latitude,
@@ -186,21 +185,6 @@ export default function PlaceDetailScreen() {
             thumbTintColor="#6200EE"
           />
         </View>
-
-        {place.tags.length > 0 && (
-          <View style={styles.section}>
-            <Text variant="labelLarge" style={styles.sectionTitle}>
-              Tags
-            </Text>
-            <View style={styles.tagsRow}>
-              {place.tags.map((tag) => (
-                <Chip key={tag} compact style={styles.tag}>
-                  {tag}
-                </Chip>
-              ))}
-            </View>
-          </View>
-        )}
 
         {place.notes ? (
           <View style={styles.section}>
@@ -301,14 +285,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  tagsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  tag: {
-    backgroundColor: '#E8DEF8',
   },
   meta: {
     color: '#888',

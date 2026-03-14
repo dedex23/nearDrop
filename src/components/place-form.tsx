@@ -16,7 +16,6 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Enregistrer'
   const [name, setName] = useState(initialValues?.name ?? '');
   const [address, setAddress] = useState(initialValues?.address ?? '');
   const [categoryId, setCategoryId] = useState(initialValues?.categoryId ?? 'cat-other');
-  const [tags, setTags] = useState(initialValues?.tags?.join(', ') ?? '');
   const [notes, setNotes] = useState(initialValues?.notes ?? '');
   const [radius, setRadius] = useState(initialValues?.radius ?? 150);
   const [latitude, setLatitude] = useState(initialValues?.latitude ?? 0);
@@ -74,10 +73,6 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Enregistrer'
         name: name.trim(),
         address: address.trim(),
         categoryId,
-        tags: tags
-          .split(',')
-          .map((t) => t.trim())
-          .filter(Boolean),
         notes: notes.trim(),
         radius,
         latitude: finalLat,
@@ -139,16 +134,6 @@ export function PlaceForm({ initialValues, onSubmit, submitLabel = 'Enregistrer'
         Catégorie
       </Text>
       <CategoryPicker value={categoryId} onChange={setCategoryId} />
-
-      <TextInput
-        testID="input-tags"
-        label="Tags (séparés par des virgules)"
-        value={tags}
-        onChangeText={setTags}
-        mode="outlined"
-        style={styles.input}
-        placeholder="ex. brunch, terrasse, rendez-vous"
-      />
 
       <TextInput
         testID="input-notes"

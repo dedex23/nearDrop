@@ -15,6 +15,13 @@
       "when": 1772282625175,
       "tag": "0001_custom_categories",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1772282625176,
+      "tag": "0002_remove_tags",
+      "breakpoints": true
     }
   ]
 }

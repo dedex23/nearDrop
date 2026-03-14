@@ -33,8 +33,7 @@ export default function PlacesScreen() {
       result = result.filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
-          p.address.toLowerCase().includes(q) ||
-          p.tags.some((t) => t.toLowerCase().includes(q))
+          p.address.toLowerCase().includes(q)
       );
     }
 

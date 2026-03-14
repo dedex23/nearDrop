@@ -29,7 +29,6 @@ export interface Place {
   latitude: number;
   longitude: number;
   categoryId: string;
-  tags: string[];
   notes: string;
   sourceType: SourceType;
   sourceUrl: string | null;

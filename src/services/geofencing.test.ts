@@ -35,7 +35,6 @@ function makePlace(overrides: Partial<Place> = {}): Place {
     latitude: 48.8566,
     longitude: 2.3522,
     categoryId: 'cat-restaurant',
-    tags: [],
     notes: '',
     sourceType: 'manual',
     sourceUrl: null,
