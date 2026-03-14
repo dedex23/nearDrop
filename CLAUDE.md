@@ -98,3 +98,13 @@ Settings Store → AsyncStorage (user preferences)
 - UI hierarchy : `adb shell uiautomator dump` → XML avec bounds pour cibler les taps
 - Mock GPS (émulateur) : `adb -s emulator-5554 emu geo fix <lon> <lat>`
 - **Gotcha** : le Pixel 9 physique se verrouille → screenshots noirs. Déverrouiller avec `adb shell input keyevent KEYCODE_WAKEUP && adb shell input swipe 540 1800 540 800 300`
+
+## Agent Team — File Ownership
+
+| Agent | Zone | Fichiers |
+|-------|------|----------|
+| **dev** | Production code | `src/**/*.ts(x)` (sauf `*.test.ts`) |
+| **qa** | Tests | `src/**/*.test.ts`, `.maestro/**/*`, `jest.config.js`, `jest.setup.ts` |
+| **debug** | Config / Scripts | `scripts/*`, `app.config.ts`, `babel.config.js`, `metro.config.js`, `drizzle.config.ts`, `tsconfig.json` |
+
+**Règle** : dev complète son travail avant que qa ne commence (séquentiel pour un même feature). Jamais deux agents sur le même fichier en parallèle.
