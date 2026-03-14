@@ -11,6 +11,21 @@ appId: com.neardrop.app
 # === SETUP: Create two places with different categories ===
 
 - tapOn: 'Lieux'
+- waitForAnimationToEnd
+
+# Recovery: expo-router race condition
+- runFlow:
+    when:
+      notVisible:
+        id: 'fab-add-place'
+    commands:
+      - stopApp
+      - launchApp:
+          clearState: true
+      - runFlow: flows/dismiss-permissions.yaml
+      - assertVisible: 'Carte'
+      - tapOn: 'Lieux'
+      - waitForAnimationToEnd
 
 # Create first place: Restaurant
 - tapOn:

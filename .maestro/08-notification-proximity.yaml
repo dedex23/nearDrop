@@ -1,7 +1,6 @@
 appId: com.neardrop.app
 ---
-# Test notification proximity: enable tracking, add a place, mock GPS near it
-# Note: this flow is best-effort — notification timing depends on emulator
+# Test: enable tracking, add a place, verify it appears in list
 - launchApp:
     clearState: true
 - runFlow: flows/dismiss-permissions.yaml
@@ -19,6 +18,26 @@ appId: com.neardrop.app
 
 # Navigate to Places and add a place
 - tapOn: "Lieux"
+- waitForAnimationToEnd
+
+# Recovery: expo-router race condition
+- runFlow:
+    when:
+      notVisible:
+        id: "fab-add-place"
+    commands:
+      - stopApp
+      - launchApp:
+          clearState: true
+      - runFlow: flows/dismiss-permissions.yaml
+      - assertVisible: "Carte"
+      - tapOn: "Paramètres"
+      - assertVisible: "Suivi en arrière-plan"
+      - tapOn:
+          id: "switch-tracking"
+      - tapOn: "Lieux"
+      - waitForAnimationToEnd
+
 - tapOn:
     id: "fab-add-place"
 
