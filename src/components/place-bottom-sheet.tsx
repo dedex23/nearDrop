@@ -38,20 +38,18 @@ export const PlaceBottomSheet = forwardRef<BottomSheet, PlaceBottomSheetProps>(
       [place, userLocation]
     );
 
-    if (!place) return null;
-
     return (
       <BottomSheet
         ref={ref}
         snapPoints={snapPoints}
         enablePanDownToClose
         onClose={onDismiss}
-        index={0}
+        index={-1}
         backgroundStyle={{ backgroundColor: theme.colors.surface }}
         handleIndicatorStyle={{ backgroundColor: theme.colors.onSurfaceVariant }}
       >
         <BottomSheetScrollView contentContainerStyle={styles.content}>
-          <Text variant="headlineSmall">{place.name}</Text>
+          <Text variant="headlineSmall">{place?.name}</Text>
           {category && (
             <Chip
               icon={category.icon}
@@ -63,14 +61,14 @@ export const PlaceBottomSheet = forwardRef<BottomSheet, PlaceBottomSheetProps>(
             </Chip>
           )}
           <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginTop: 8 }}>
-            {place.address}
+            {place?.address}
           </Text>
           {distance !== null && (
             <Text variant="bodySmall" style={{ color: theme.colors.primary, marginTop: 4 }}>
-              {'\u00e0'} {formatDistance(distance)}
+              à {formatDistance(distance)}
             </Text>
           )}
-          {place.notes ? (
+          {place?.notes ? (
             <>
               <Divider style={styles.divider} />
               <Text variant="labelLarge">Notes</Text>
@@ -81,16 +79,18 @@ export const PlaceBottomSheet = forwardRef<BottomSheet, PlaceBottomSheetProps>(
               </BottomSheetScrollView>
             </>
           ) : null}
-          <Button
-            mode="contained"
-            onPress={() => {
-              onDismiss();
-              router.push(`/place/${place.id}` as never);
-            }}
-            style={styles.detailButton}
-          >
-            Voir le d{'\u00e9'}tail
-          </Button>
+          {place && (
+            <Button
+              mode="contained"
+              onPress={() => {
+                onDismiss();
+                router.push(`/place/${place.id}` as never);
+              }}
+              style={styles.detailButton}
+            >
+              Voir le détail
+            </Button>
+          )}
         </BottomSheetScrollView>
       </BottomSheet>
     );
