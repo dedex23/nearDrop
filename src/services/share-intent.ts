@@ -294,22 +294,7 @@ async function enrichSocialShare(
   const ogHint = !ogAddress ? extractLocationHintFromText(ogDescription) : null;
   console.log(`[NearDrop] OG description extraction: address="${ogAddress}" hint="${ogHint}"`);
 
-  // Try to enrich the hint with city from hashtags or username
-  const allText = `${rawText} ${og?.title ?? ''} ${og?.description ?? ''}`;
-  const cityFromHashtag = extractCityFromHashtags(allText);
-
-  let bestCandidate = textAddress || textHint || ogAddress || ogHint;
-  // Append city context if we have a hint but no address (e.g. "L'infini Café" + "Paris")
-  if (bestCandidate && cityFromHashtag && !bestCandidate.toLowerCase().includes(cityFromHashtag.toLowerCase())) {
-    bestCandidate = `${bestCandidate} ${cityFromHashtag}`;
-  }
-  // If no candidate at all but we found a city, try the place name + city
-  if (!bestCandidate && cityFromHashtag) {
-    const placeName = name || extractPlaceNameFromOgTitle(og?.title ?? null);
-    if (placeName) {
-      bestCandidate = `${placeName} ${cityFromHashtag}`;
-    }
-  }
+  const bestCandidate = textAddress || textHint || ogAddress || ogHint;
   console.log(`[NearDrop] bestCandidate for geocoding: "${bestCandidate}"`);
 
   // Step 3: Geocode the best candidate, biased near user location
@@ -409,31 +394,6 @@ function extractAddressFromGoogleMapsPath(url: string): string | null {
 }
 
 /** Extract the text before the URL (often the place name in share messages) */
-const KNOWN_CITIES = [
-  'paris', 'lyon', 'marseille', 'bordeaux', 'toulouse', 'lille',
-  'nantes', 'strasbourg', 'montpellier', 'nice', 'rennes', 'grenoble',
-  'rouen', 'toulon', 'angers', 'dijon', 'brest', 'reims',
-  'london', 'berlin', 'barcelona', 'rome', 'amsterdam', 'brussels',
-  'lisbon', 'madrid', 'milan', 'vienna', 'prague', 'dublin',
-  'new york', 'los angeles', 'tokyo', 'seoul', 'bangkok', 'dubai',
-];
-
-/** Extract a city name from hashtags like #pariscafe, #foodparis, #lyonrestaurant */
-function extractCityFromHashtags(text: string): string | null {
-  const hashtags = text.match(/#\w+/g);
-  if (!hashtags) return null;
-
-  for (const tag of hashtags) {
-    const lower = tag.slice(1).toLowerCase(); // remove #
-    for (const city of KNOWN_CITIES) {
-      if (lower.includes(city)) {
-        return city.charAt(0).toUpperCase() + city.slice(1);
-      }
-    }
-  }
-  return null;
-}
-
 function extractNameBeforeUrl(text: string, url: string): string {
   const idx = text.indexOf(url);
   if (idx <= 0) return '';
