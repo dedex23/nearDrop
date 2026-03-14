@@ -97,28 +97,31 @@ export default function PlacesScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Searchbar
-        testID="searchbar"
-        placeholder="Rechercher un lieu..."
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        style={styles.searchbar}
-      />
-
-      <CategoryChips selected={selectedCategory} onSelect={setSelectedCategory} />
-
-      <SegmentedButtons
-        value={sortBy}
-        onValueChange={(v) => setSortBy(v as 'date' | 'name' | 'category')}
-        buttons={[
-          { value: 'date', label: 'Récent' },
-          { value: 'name', label: 'Nom' },
-          { value: 'category', label: 'Catégorie' },
-        ]}
-        style={styles.sortButtons}
-      />
-
       <FlatList
+        ListHeaderComponent={
+          <>
+            <Searchbar
+              testID="searchbar"
+              placeholder="Rechercher un lieu..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              style={styles.searchbar}
+            />
+
+            <CategoryChips selected={selectedCategory} onSelect={setSelectedCategory} />
+
+            <SegmentedButtons
+              value={sortBy}
+              onValueChange={(v) => setSortBy(v as 'date' | 'name' | 'category')}
+              buttons={[
+                { value: 'date', label: 'Récent' },
+                { value: 'name', label: 'Nom' },
+                { value: 'category', label: 'Catégorie' },
+              ]}
+              style={styles.sortButtons}
+            />
+          </>
+        }
         data={filteredAndSorted}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
