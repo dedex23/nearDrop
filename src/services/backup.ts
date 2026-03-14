@@ -1,5 +1,4 @@
 import { Paths, File, Directory } from 'expo-file-system';
-import { expoDb } from '@/db/client';
 
 const BACKUP_DIR_NAME = 'backups';
 const MAX_BACKUPS = 3;
@@ -32,9 +31,6 @@ function ensureBackupDir(): void {
 async function performBackup(): Promise<void> {
   try {
     ensureBackupDir();
-
-    // Flush WAL to main DB file before copying to ensure backup integrity
-    expoDb.execSync('PRAGMA wal_checkpoint(FULL)');
 
     const dbFile = new File(Paths.document, 'SQLite', 'neardrop.db');
 
