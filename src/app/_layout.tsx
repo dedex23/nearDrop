@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useColorScheme } from 'react-native';
 import { Stack, SplashScreen, useRouter } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';
 import * as Notifications from 'expo-notifications';
@@ -13,7 +14,7 @@ import { setupNotifications } from '@/services/notifications';
 import '@/services/location';
 // eslint-disable-next-line import/no-duplicates
 import { startBackgroundLocation, stopBackgroundLocation } from '@/services/location';
-import { theme } from '@/theme';
+import { lightTheme, darkTheme } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -98,9 +99,17 @@ function RootLayoutInner() {
 }
 
 export default function RootLayout() {
+  const colorScheme = useColorScheme();
+  const themeMode = useSettingsStore((s) => s.themeMode);
+  const activeTheme = useMemo(() => {
+    if (themeMode === 'light') return lightTheme;
+    if (themeMode === 'dark') return darkTheme;
+    return colorScheme === 'dark' ? darkTheme : lightTheme;
+  }, [themeMode, colorScheme]);
+
   return (
     <ShareIntentProvider>
-      <PaperProvider theme={theme}>
+      <PaperProvider theme={activeTheme}>
         <RootLayoutInner />
       </PaperProvider>
     </ShareIntentProvider>
