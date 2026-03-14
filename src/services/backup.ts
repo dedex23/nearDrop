@@ -1,4 +1,6 @@
 import { Paths, File, Directory } from 'expo-file-system';
+import { db } from '@/db/client';
+import { sql } from 'drizzle-orm';
 
 const BACKUP_DIR_NAME = 'backups';
 const MAX_BACKUPS = 3;
@@ -28,13 +30,13 @@ function ensureBackupDir(): void {
   }
 }
 
-function performBackup(): void {
+async function performBackup(): Promise<void> {
   try {
     ensureBackupDir();
 
-    // NOTE: Ideally we would run PRAGMA wal_checkpoint(FULL) before copying
-    // to flush the WAL. This is not done here to keep the service decoupled
-    // from the database client. The caller can checkpoint before scheduling.
+    // Flush WAL to main DB file before copying to ensure backup integrity
+    await db.run(sql`PRAGMA wal_checkpoint(FULL)`);
+
     const dbFile = new File(Paths.document, 'SQLite', 'neardrop.db');
 
     if (!dbFile.exists) {
@@ -113,6 +115,10 @@ export function restoreBackup(backupName: string): boolean {
 
     if (!srcFile.exists) return false;
 
+    // expo-file-system copy() throws if destination exists — delete first
+    if (destFile.exists) {
+      destFile.delete();
+    }
     srcFile.copy(destFile);
     return true;
   } catch (error) {

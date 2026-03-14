@@ -27,6 +27,7 @@ export default function SettingsScreen() {
   const themeMode = useSettingsStore((s) => s.themeMode);
   const updateSettings = useSettingsStore((s) => s.updateSettings);
   const loadPlaces = useAppStore((s) => s.loadPlaces);
+  const loadCategories = useAppStore((s) => s.loadCategories);
   const categories = useAppStore((s) => s.categories);
   const [lastBackup, setLastBackup] = useState<Date | null>(null);
   const [cooldownIndex, setCooldownIndex] = useState(() => {
@@ -51,6 +52,7 @@ export default function SettingsScreen() {
         const success = restoreBackup(b.name);
         if (success) {
           Alert.alert('Restauration réussie', 'Les données ont été restaurées. Rechargement...');
+          await loadCategories();
           await loadPlaces();
         } else {
           Alert.alert('Échec', 'La restauration a échoué.');
