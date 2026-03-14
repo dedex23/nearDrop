@@ -110,7 +110,7 @@ export function PlaceCard({ place, onPress, onDelete, onToggleActive }: PlaceCar
               {place.notes}
             </Text>
           ) : null}
-          <Card.Content style={styles.row}>
+          <View style={styles.row}>
             <Chip
               icon={category?.icon ?? 'map-marker'}
               compact
@@ -134,7 +134,7 @@ export function PlaceCard({ place, onPress, onDelete, onToggleActive }: PlaceCar
                 En pause
               </Text>
             )}
-          </Card.Content>
+          </View>
         </Card.Content>
       </Card>
     </Swipeable>
