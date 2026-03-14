@@ -5,7 +5,6 @@ import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import Slider from '@react-native-community/slider';
 import { useAppStore } from '@/stores/app-store';
 import { PlaceForm } from '@/components/place-form';
-import { CATEGORY_CONFIG } from '@/utils/constants';
 import { haversineDistance, formatDistance } from '@/utils/distance';
 import type { PlaceInsert } from '@/types';
 
@@ -13,6 +12,7 @@ export default function PlaceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const places = useAppStore((s) => s.places);
+  const categories = useAppStore((s) => s.categories);
   const updatePlace = useAppStore((s) => s.updatePlace);
   const removePlace = useAppStore((s) => s.removePlace);
   const userLocation = useAppStore((s) => s.userLocation);
@@ -40,7 +40,7 @@ export default function PlaceDetailScreen() {
     );
   }
 
-  const config = CATEGORY_CONFIG[place.category];
+  const category = categories.find((c) => c.id === place.categoryId);
   const distance = userLocation
     ? haversineDistance(
         userLocation.latitude,
@@ -103,7 +103,7 @@ export default function PlaceDetailScreen() {
           initialValues={{
             name: place.name,
             address: place.address,
-            category: place.category,
+            categoryId: place.categoryId,
             tags: place.tags,
             notes: place.notes,
             radius: place.radius,
@@ -135,11 +135,11 @@ export default function PlaceDetailScreen() {
         <View style={styles.header}>
           <Text variant="headlineMedium">{place.name}</Text>
           <Chip
-            icon={config.icon}
-            style={[styles.categoryChip, { backgroundColor: config.color + '20' }]}
-            textStyle={{ color: config.color }}
+            icon={category?.icon ?? 'map-marker'}
+            style={[styles.categoryChip, { backgroundColor: (category?.color ?? '#757575') + '20' }]}
+            textStyle={{ color: category?.color ?? '#757575' }}
           >
-            {config.label}
+            {category?.name ?? ''}
           </Chip>
         </View>
 
@@ -207,7 +207,7 @@ export default function PlaceDetailScreen() {
             <Text variant="labelLarge" style={styles.sectionTitle}>
               Notes
             </Text>
-            <Text variant="bodyMedium">{place.notes}</Text>
+            <Text variant="bodyMedium" selectable>{place.notes}</Text>
           </View>
         ) : null}
 
