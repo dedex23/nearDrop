@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, View, Text as RNText, ScrollView as SV } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Stack, SplashScreen, useRouter } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';
 import * as Notifications from 'expo-notifications';
@@ -84,6 +85,18 @@ function RootLayoutInner() {
 
   if (error) {
     console.error('[NearDrop] Database migration error:', error);
+    // Show error on screen so we can diagnose
+    SplashScreen.hideAsync();
+    return (
+      <View style={{ flex: 1, padding: 40, backgroundColor: '#B00020', justifyContent: 'center' }}>
+        <RNText style={{ color: '#fff', fontSize: 18, fontWeight: 'bold', marginBottom: 16 }}>
+          Migration Error
+        </RNText>
+        <SV>
+          <RNText style={{ color: '#fff', fontSize: 14 }}>{String(error)}</RNText>
+        </SV>
+      </View>
+    );
   }
 
   if (!isReady) return null;
@@ -109,10 +122,12 @@ export default function RootLayout() {
   }, [themeMode, colorScheme]);
 
   return (
-    <ShareIntentProvider>
-      <PaperProvider theme={activeTheme}>
-        <RootLayoutInner />
-      </PaperProvider>
-    </ShareIntentProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ShareIntentProvider>
+        <PaperProvider theme={activeTheme}>
+          <RootLayoutInner />
+        </PaperProvider>
+      </ShareIntentProvider>
+    </GestureHandlerRootView>
   );
 }

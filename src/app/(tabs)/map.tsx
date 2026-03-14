@@ -2,7 +2,6 @@ import React, { useMemo, useRef, useState, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { FAB, Badge, Text } from 'react-native-paper';
 import { useRouter } from 'expo-router';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useAppStore } from '@/stores/app-store';
 import { useSettingsStore } from '@/stores/settings-store';
@@ -53,7 +52,7 @@ export default function MapScreen() {
       };
 
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <View style={styles.container}>
       <CategoryChips selected={selectedCategory} onSelect={setSelectedCategory} />
 
       <View style={styles.statusBar}>
@@ -86,7 +85,7 @@ export default function MapScreen() {
         place={selectedPlace}
         onDismiss={handleDismiss}
       />
-    </GestureHandlerRootView>
+    </View>
   );
 }
 
