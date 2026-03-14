@@ -89,11 +89,15 @@ export function getBackupList(): { name: string; date: Date; size: number }[] {
     for (const name of backups) {
       const file = new File(backupDir, name);
       if (file.exists) {
+        // Filename: neardrop-backup-YYYY-MM-DDTHH-MM-SS.db
+        // toISOString() returns UTC, so the filename is in UTC.
+        // Parse: replace last two dash-pairs with colons to reconstruct ISO string
         const dateStr = name
           .replace('neardrop-backup-', '')
           .replace('.db', '')
           .replace(/-(\d{2})-(\d{2})$/, ':$1:$2');
-        result.push({ name, date: new Date(dateStr), size: file.size });
+        // Append Z to indicate UTC (toISOString produces UTC timestamps)
+        result.push({ name, date: new Date(dateStr + 'Z'), size: file.size });
       }
     }
     return result;
