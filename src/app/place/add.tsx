@@ -10,8 +10,12 @@ export default function AddPlaceScreen() {
   const defaultRadius = useSettingsStore((s) => s.defaultRadius);
 
   const handleSubmit = async (data: PlaceInsert) => {
-    await addPlace(data);
-    router.back();
+    const place = await addPlace(data);
+    // Navigate to map tab centered on the new place
+    router.replace({
+      pathname: '/(tabs)/map',
+      params: { lat: place.latitude, lng: place.longitude },
+    } as never);
   };
 
   return (
