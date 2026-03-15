@@ -294,19 +294,40 @@ async function enrichSocialShare(
   const ogHint = !ogAddress ? extractLocationHintFromText(ogDescription) : null;
   if (__DEV__) console.log(`[NearDrop] OG description extraction: address="${ogAddress}" hint="${ogHint}"`);
 
+  const placeName = name || extractPlaceNameFromOgTitle(og?.title ?? null);
   const bestCandidate = textAddress || textHint || ogAddress || ogHint;
   if (__DEV__) console.log(`[NearDrop] bestCandidate for geocoding: "${bestCandidate}"`);
 
   // Step 3: Geocode the best candidate, biased near user location
+  const userLocation = useAppStore.getState().userLocation;
+  if (__DEV__) console.log(`[NearDrop] geocoding with userLocation:`, userLocation ? `${userLocation.latitude},${userLocation.longitude}` : 'null');
+
   if (bestCandidate) {
-    const userLocation = useAppStore.getState().userLocation;
-    if (__DEV__) console.log(`[NearDrop] geocoding with userLocation:`, userLocation ? `${userLocation.latitude},${userLocation.longitude}` : 'null');
     const geocoded = await geocodeAddress(bestCandidate, userLocation);
     if (__DEV__) console.log(`[NearDrop] geocode result:`, JSON.stringify(geocoded));
     if (geocoded) {
       return {
-        name: name || extractPlaceNameFromOgTitle(og?.title ?? null) || og?.title || defaultName,
+        name: placeName || og?.title || defaultName,
         address: bestCandidate,
+        latitude: geocoded.latitude,
+        longitude: geocoded.longitude,
+        sourceType,
+        sourceUrl: url,
+        notes,
+      };
+    }
+  }
+
+  // Step 4: No address/hint found — try geocoding the place name as last resort
+  // (e.g. Instagram profile page "Residence Kann" → geocode the name directly)
+  if (placeName) {
+    if (__DEV__) console.log(`[NearDrop] fallback: geocoding place name "${placeName}"`);
+    const geocoded = await geocodeAddress(placeName, userLocation);
+    if (__DEV__) console.log(`[NearDrop] geocode result:`, JSON.stringify(geocoded));
+    if (geocoded) {
+      return {
+        name: placeName,
+        address: geocoded.displayName,
         latitude: geocoded.latitude,
         longitude: geocoded.longitude,
         sourceType,
@@ -408,24 +429,20 @@ function extractNameBeforeUrl(text: string, url: string): string {
 function extractPlaceNameFromOgTitle(ogTitle: string | null): string {
   if (!ogTitle) return '';
 
-  // Try to find a 📍 location pin — text after it is usually the place name
-  const pinMatch = ogTitle.match(/📍\s*(.+)/);
-  if (pinMatch) {
-    // Take first line after pin, strip trailing emoji/stars/hashtags
-    const afterPin = pinMatch[1].split('\n')[0].trim();
-    const cleaned = afterPin.replace(/[⭐️#].*/g, '').trim();
-    if (cleaned.length > 0 && cleaned.length <= 80) return cleaned;
+  // Instagram profile: "Name (@handle) • Instagram photos and videos"
+  const profileMatch = ogTitle.match(/^(.+?)\s*\(@\w+\)\s*[•·]/);
+  if (profileMatch) {
+    return profileMatch[1].trim().substring(0, 60);
   }
 
-  // Instagram OG title format: "Username on Instagram: \"caption...\""
+  // Instagram post: "Display Name on Instagram: ..."
+  // The display name is usually the business/place name
   const igMatch = ogTitle.match(/^(.+?)\s+on Instagram:/);
   if (igMatch) {
-    // Use the account display name as the place name — often the business name
-    const accountName = igMatch[1].trim();
-    if (accountName.length > 0 && accountName.length <= 60) return accountName;
+    return igMatch[1].trim().substring(0, 60);
   }
 
-  // If title is short enough, use it directly
+  // Short title — use as-is
   if (ogTitle.length <= 60) return ogTitle;
 
   return '';
