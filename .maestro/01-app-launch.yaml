@@ -6,9 +6,7 @@ appId: com.neardrop.app
 - runFlow: flows/dismiss-permissions.yaml
 
 # Assert the Map tab is visible
-- extendedWaitUntil:
-    visible: "Carte"
-    timeout: 15000
+- assertVisible: "Carte"
 - assertVisible:
     text: "lieux"
 

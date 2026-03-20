@@ -1,15 +1,16 @@
-import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
-import { Chip } from 'react-native-paper';
-import { CATEGORIES, type Category } from '@/types';
-import { CATEGORY_CONFIG } from '@/utils/constants';
+import { Chip, useTheme } from 'react-native-paper';
+import { useAppStore } from '@/stores/app-store';
 
 interface CategoryChipsProps {
-  selected: Category | null;
-  onSelect: (category: Category | null) => void;
+  selected: string | null;
+  onSelect: (categoryId: string | null) => void;
 }
 
 export function CategoryChips({ selected, onSelect }: CategoryChipsProps) {
+  const theme = useTheme();
+  const categories = useAppStore((s) => s.categories);
+
   return (
     <ScrollView
       horizontal
@@ -17,19 +18,18 @@ export function CategoryChips({ selected, onSelect }: CategoryChipsProps) {
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
     >
-      {CATEGORIES.map((cat) => {
-        const config = CATEGORY_CONFIG[cat];
-        const isSelected = selected === cat;
+      {categories.map((cat) => {
+        const isSelected = selected === cat.id;
         return (
           <Chip
-            key={cat}
-            icon={config.icon}
+            key={cat.id}
+            icon={cat.icon}
             selected={isSelected}
-            onPress={() => onSelect(isSelected ? null : cat)}
-            style={[styles.chip, { backgroundColor: isSelected ? config.color + '20' : '#F0F0F0' }]}
-            textStyle={isSelected ? { color: config.color } : undefined}
+            onPress={() => onSelect(isSelected ? null : cat.id)}
+            style={[styles.chip, { backgroundColor: isSelected ? cat.color + '20' : theme.colors.surfaceVariant }]}
+            textStyle={isSelected ? { color: cat.color } : undefined}
           >
-            {config.label}
+            {cat.name}
           </Chip>
         );
       })}
@@ -38,26 +38,28 @@ export function CategoryChips({ selected, onSelect }: CategoryChipsProps) {
 }
 
 interface CategoryPickerProps {
-  value: Category;
-  onChange: (category: Category) => void;
+  value: string;
+  onChange: (categoryId: string) => void;
 }
 
 export function CategoryPicker({ value, onChange }: CategoryPickerProps) {
+  const theme = useTheme();
+  const categories = useAppStore((s) => s.categories);
+
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.container}>
-      {CATEGORIES.map((cat) => {
-        const config = CATEGORY_CONFIG[cat];
-        const isSelected = value === cat;
+      {categories.map((cat) => {
+        const isSelected = value === cat.id;
         return (
           <Chip
-            key={cat}
-            icon={config.icon}
+            key={cat.id}
+            icon={cat.icon}
             selected={isSelected}
-            onPress={() => onChange(cat)}
-            style={[styles.chip, { backgroundColor: isSelected ? config.color + '30' : '#F0F0F0' }]}
-            textStyle={isSelected ? { color: config.color, fontWeight: '600' } : undefined}
+            onPress={() => onChange(cat.id)}
+            style={[styles.chip, { backgroundColor: isSelected ? cat.color + '30' : theme.colors.surfaceVariant }]}
+            textStyle={isSelected ? { color: cat.color, fontWeight: '600' } : undefined}
           >
-            {config.label}
+            {cat.name}
           </Chip>
         );
       })}

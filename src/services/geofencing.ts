@@ -1,4 +1,4 @@
-import { getActivePlaces, markNotified } from '@/db/queries';
+import { getActivePlaces, getAllCategories, markNotified } from '@/db/queries';
 import { haversineDistance } from '@/utils/distance';
 import { ROUGH_FILTER_DEGREES } from '@/utils/constants';
 import { sendProximityNotification, sendGroupedNotification } from './notifications';
@@ -45,6 +45,8 @@ export async function checkGeofences(currentLat: number, currentLon: number): Pr
     }
 
     const allPlaces = await getActivePlaces();
+    const allCategories = await getAllCategories();
+    const categoryMap = new Map(allCategories.map((c) => [c.id, c.name]));
 
     // Fast bounding-box pre-filter (~5.5km)
     const candidates = allPlaces.filter(
@@ -76,7 +78,7 @@ export async function checkGeofences(currentLat: number, currentLon: number): Pr
     // Send notifications
     if (placesToNotify.length === 1) {
       const { place, distance } = placesToNotify[0];
-      await sendProximityNotification(place, distance);
+      await sendProximityNotification(place, distance, categoryMap.get(place.categoryId));
       await markNotified(place.id);
     } else {
       await sendGroupedNotification(placesToNotify.map((p) => p.place));

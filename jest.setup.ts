@@ -40,6 +40,29 @@ jest.mock('expo-sqlite', () => ({
   })),
 }));
 
+// Mock expo-file-system
+jest.mock('expo-file-system', () => ({
+  Paths: {
+    document: { uri: 'file:///mock/document/' },
+    cache: { uri: 'file:///mock/cache/' },
+    bundle: { uri: 'file:///mock/bundle/' },
+  },
+  File: jest.fn().mockImplementation(() => ({
+    exists: false,
+    size: 0,
+    name: '',
+    uri: '',
+    copy: jest.fn(),
+    delete: jest.fn(),
+  })),
+  Directory: jest.fn().mockImplementation(() => ({
+    exists: false,
+    uri: '',
+    create: jest.fn(),
+    list: jest.fn(() => []),
+  })),
+}));
+
 // Mock @react-native-async-storage/async-storage
 jest.mock('@react-native-async-storage/async-storage', () => ({
   __esModule: true,

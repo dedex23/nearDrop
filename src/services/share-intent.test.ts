@@ -354,6 +354,52 @@ describe('parseSharedContent', () => {
       expect(result.latitude).toBe(48.87);
     });
 
+    it('geocodes place name from Instagram profile page when no address found', async () => {
+      mockGeocode.mockResolvedValue({
+        latitude: 48.85,
+        longitude: 2.35,
+        displayName: '12 Rue du Exemple, 75003 Paris, France',
+      });
+      mockFetchOg(
+        makeOgHtml({
+          'og:title': 'Residence Kann (@residence_kann) \u2022 Instagram photos and videos',
+          'og:description': '8,881 Followers, 2,084 Following, 477 Posts',
+        })
+      );
+      const result = await parseSharedContent(
+        'https://www.instagram.com/residence_kann',
+        null
+      );
+      expect(result.sourceType).toBe('instagram');
+      expect(result.name).toBe('Residence Kann');
+      expect(result.address).toBe('12 Rue du Exemple, 75003 Paris, France');
+      expect(result.latitude).toBe(48.85);
+      expect(result.longitude).toBe(2.35);
+      expect(mockGeocode).toHaveBeenCalledWith('Residence Kann', null);
+    });
+
+    it('uses account name (not address after 📍) as place name when post has address in caption', async () => {
+      mockGeocode.mockResolvedValue({
+        latitude: 48.6365,
+        longitude: 2.3069,
+        displayName: '1 Rue de Sainte-Geneviève, 91240 Saint-Michel-sur-Orge, France',
+      });
+      mockFetchOg(
+        makeOgHtml({
+          'og:title': 'Boulangerie W&M on Instagram: "Des créations de pâtisserie artisanale\n\n✨BOULANGERIE W&M ✨\n📍1 Rue de Sainte-Geneviève,\nSaint-Michel-sur-Orge 91240"',
+          'og:description': '3,807 likes - boulangerie_wm on March 6, 2026: "Des créations de pâtisserie artisanale\n\n✨BOULANGERIE W&M ✨\n📍1 Rue de Sainte-Geneviève,\nSaint-Michel-sur-Orge 91240"',
+        })
+      );
+      const result = await parseSharedContent(
+        'https://www.instagram.com/reel/DVjAxDQDKHm/',
+        null
+      );
+      expect(result.sourceType).toBe('instagram');
+      expect(result.name).toBe('Boulangerie W&M');
+      expect(result.latitude).toBe(48.6365);
+      expect(result.longitude).toBe(2.3069);
+    });
+
     it('falls back gracefully when fetch times out', async () => {
       mockFetch.mockRejectedValue(new Error('AbortError'));
       const result = await parseSharedContent(

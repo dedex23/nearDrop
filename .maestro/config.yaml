@@ -7,3 +7,5 @@ executionOrder:
     - "04-place-crud"
     - "05-search-filter"
     - "06-settings"
+    - "07-category-management"
+    - "08-notification-proximity"
