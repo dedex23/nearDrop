@@ -1,6 +1,6 @@
-import React, { useMemo, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { FAB, Badge, Text, useTheme } from 'react-native-paper';
+import { FAB, Badge, Text, Snackbar, useTheme } from 'react-native-paper';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useAppStore } from '@/stores/app-store';
@@ -22,7 +22,9 @@ export default function MapScreen() {
   const userLocation = useAppStore((s) => s.userLocation);
   const isTrackingEnabled = useSettingsStore((s) => s.isTrackingEnabled);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const prevPlacesCount = useRef(places.length);
 
   const handleMarkerPress = useCallback((place: Place) => {
     setSelectedPlace(place);
@@ -40,15 +42,6 @@ export default function MapScreen() {
   }, [places, selectedCategory]);
 
   const initialRegion = useMemo(() => {
-    // If navigated with coordinates (e.g. after adding a place), center there
-    if (params.lat && params.lng) {
-      return {
-        latitude: parseFloat(params.lat),
-        longitude: parseFloat(params.lng),
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      };
-    }
     return location
       ? {
           latitude: location.coords.latitude,
@@ -62,7 +55,29 @@ export default function MapScreen() {
           latitudeDelta: 0.1,
           longitudeDelta: 0.1,
         };
-  }, [location, params.lat, params.lng]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only compute once on mount
+
+  // Animate to coordinates when navigated from add/share-intent
+  const focusRegion = useMemo(() => {
+    if (params.lat && params.lng) {
+      return {
+        latitude: parseFloat(params.lat),
+        longitude: parseFloat(params.lng),
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+    }
+    return null;
+  }, [params.lat, params.lng]);
+
+  // Show snackbar when a new place is added
+  useEffect(() => {
+    if (places.length > prevPlacesCount.current) {
+      setSnackbarVisible(true);
+    }
+    prevPlacesCount.current = places.length;
+  }, [places.length]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -83,6 +98,7 @@ export default function MapScreen() {
         places={filteredPlaces}
         userLocation={userLocation}
         initialRegion={initialRegion}
+        focusRegion={focusRegion}
         onMarkerPress={handleMarkerPress}
       />
 
@@ -98,6 +114,15 @@ export default function MapScreen() {
         place={selectedPlace}
         onDismiss={handleDismiss}
       />
+
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+        style={styles.snackbar}
+      >
+        Lieu enregistré avec succès
+      </Snackbar>
     </View>
   );
 }
@@ -126,5 +151,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 16,
     bottom: 16,
+  },
+  snackbar: {
+    marginBottom: 80,
   },
 });

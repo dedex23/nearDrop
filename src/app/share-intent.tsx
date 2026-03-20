@@ -73,8 +73,13 @@ export default function ShareIntentScreen() {
     try {
       const place = await addPlace(data);
       resetShareIntent();
-      router.back();
+      // Navigate to map centered on the new place
+      router.replace({
+        pathname: '/(tabs)/map',
+        params: { lat: place.latitude, lng: place.longitude },
+      } as never);
     } catch (error) {
+      console.error('[NearDrop] Failed to add place from share intent:', error);
       Alert.alert('Erreur', "Impossible d'ajouter le lieu.");
     }
   };

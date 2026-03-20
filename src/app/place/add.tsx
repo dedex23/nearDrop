@@ -19,6 +19,7 @@ export default function AddPlaceScreen() {
         params: { lat: place.latitude, lng: place.longitude },
       } as never);
     } catch (error) {
+      console.error('[NearDrop] Failed to add place:', error);
       Alert.alert('Erreur', "Impossible d'ajouter le lieu.");
     }
   };

@@ -131,6 +131,15 @@ export async function insertPlace(data: PlaceInsert): Promise<Place> {
     notifiedAt: null,
   };
   await db.insert(places).values(row);
+
+  // Read-back verification: ensure the place was actually persisted
+  const verify = await db.select().from(places).where(eq(places.id, id)).limit(1);
+  if (verify.length === 0) {
+    console.error('[NearDrop] INSERT succeeded but read-back failed for place:', id);
+    throw new Error('Place was not persisted to database');
+  }
+  if (__DEV__) console.log('[NearDrop] Place saved and verified:', id, data.name);
+
   return { ...data, id, createdAt: now, updatedAt: now, notifiedAt: null };
 }
 

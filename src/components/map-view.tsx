@@ -1,32 +1,52 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import ClusteredMapView from 'react-native-map-clustering';
 import { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
+import type MapView from 'react-native-maps';
 import { useTheme } from 'react-native-paper';
 import { useAppStore } from '@/stores/app-store';
 import { haversineDistance, formatDistance } from '@/utils/distance';
 import type { Place } from '@/types';
 
+type Region = {
+  latitude: number;
+  longitude: number;
+  latitudeDelta: number;
+  longitudeDelta: number;
+};
+
 type Props = {
   places: Place[];
   userLocation: { latitude: number; longitude: number } | null;
-  initialRegion: {
-    latitude: number;
-    longitude: number;
-    latitudeDelta: number;
-    longitudeDelta: number;
-  };
+  initialRegion: Region;
+  focusRegion?: Region | null;
   onMarkerPress?: (place: Place) => void;
 };
 
-function MapViewComponent({
-  places,
-  userLocation,
-  initialRegion,
-  onMarkerPress,
-}: Props) {
+export type MapViewHandle = {
+  animateToRegion: (region: Region, duration?: number) => void;
+};
+
+const MapViewComponent = React.forwardRef<MapViewHandle, Props>(function MapViewComponent(
+  { places, userLocation, initialRegion, focusRegion, onMarkerPress },
+  ref,
+) {
   const theme = useTheme();
   const categories = useAppStore((s) => s.categories);
+  const mapRef = useRef<MapView>(null);
+
+  useImperativeHandle(ref, () => ({
+    animateToRegion: (region, duration = 500) => {
+      mapRef.current?.animateToRegion(region, duration);
+    },
+  }));
+
+  // Animate to focusRegion when it changes
+  useEffect(() => {
+    if (focusRegion) {
+      mapRef.current?.animateToRegion(focusRegion, 500);
+    }
+  }, [focusRegion]);
 
   const categoryMap = useMemo(
     () => new Map(categories.map((c) => [c.id, c])),
@@ -55,6 +75,7 @@ function MapViewComponent({
 
   return (
     <ClusteredMapView
+      ref={mapRef}
       provider={PROVIDER_GOOGLE}
       style={styles.map}
       showsUserLocation
@@ -100,7 +121,7 @@ function MapViewComponent({
       })}
     </ClusteredMapView>
   );
-}
+});
 
 const styles = StyleSheet.create({
   map: {
