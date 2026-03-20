@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { ActivityIndicator, Text } from 'react-native-paper';
+import { ActivityIndicator, Text, useTheme } from 'react-native-paper';
 import { useShareIntentContext } from 'expo-share-intent';
 import { PlaceForm } from '@/components/place-form';
 import { parseSharedContent } from '@/services/share-intent';
@@ -11,6 +11,7 @@ import type { PlaceInsert } from '@/types';
 
 export default function ShareIntentScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const { shareIntent, resetShareIntent } = useShareIntentContext();
   const addPlace = useAppStore((s) => s.addPlace);
   const defaultRadius = useSettingsStore((s) => s.defaultRadius);
@@ -19,7 +20,7 @@ export default function ShareIntentScreen() {
   const hasStartedParsing = useRef(false);
 
   useEffect(() => {
-    console.log('[NearDrop] shareIntent:', JSON.stringify(shareIntent));
+    if (__DEV__) console.log('[NearDrop] shareIntent:', JSON.stringify(shareIntent));
 
     // Ignore empty updates — the lib may reset shareIntent after the initial delivery
     if (!shareIntent?.text && !shareIntent?.webUrl) return;
@@ -69,9 +70,13 @@ export default function ShareIntentScreen() {
   }, [isParsing]);
 
   const handleSubmit = async (data: PlaceInsert) => {
-    await addPlace(data);
-    resetShareIntent();
-    router.back();
+    try {
+      const place = await addPlace(data);
+      resetShareIntent();
+      router.back();
+    } catch (error) {
+      Alert.alert('Erreur', "Impossible d'ajouter le lieu.");
+    }
   };
 
   const handleCancel = () => {
@@ -83,9 +88,9 @@ export default function ShareIntentScreen() {
     return (
       <>
         <Stack.Screen options={{ title: 'Lieu partagé' }} />
-        <View style={styles.loading}>
-          <ActivityIndicator size="large" color="#6200EE" />
-          <Text style={styles.loadingText}>Analyse du contenu partagé...</Text>
+        <View style={[styles.loading, { backgroundColor: theme.colors.background }]}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Text style={{ marginTop: 8, color: theme.colors.onSurfaceVariant }}>Analyse du contenu partagé...</Text>
         </View>
       </>
     );
@@ -97,7 +102,7 @@ export default function ShareIntentScreen() {
         options={{
           title: 'Ajouter un lieu partagé',
           headerLeft: () => (
-            <Text onPress={handleCancel} style={styles.cancelButton}>
+            <Text onPress={handleCancel} style={{ color: theme.colors.primary, fontSize: 16, paddingHorizontal: 8 }}>
               Annuler
             </Text>
           ),
@@ -119,14 +124,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 16,
-  },
-  loadingText: {
-    marginTop: 8,
-    color: '#666',
-  },
-  cancelButton: {
-    color: '#6200EE',
-    fontSize: 16,
-    paddingHorizontal: 8,
   },
 });

@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
 import { useTheme } from 'react-native-paper';
 
-export default function PlaceLayout() {
+export default function CategoriesLayout() {
   const theme = useTheme();
 
   return (
@@ -10,6 +10,9 @@ export default function PlaceLayout() {
         headerStyle: { backgroundColor: theme.colors.surface },
         headerTintColor: theme.colors.onSurface,
       }}
-    />
+    >
+      <Stack.Screen name="index" options={{ title: 'Gérer les catégories' }} />
+      <Stack.Screen name="edit" options={{ title: 'Catégorie' }} />
+    </Stack>
   );
 }

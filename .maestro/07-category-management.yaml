@@ -1,0 +1,46 @@
+appId: com.neardrop.app
+---
+# Test category management: navigate, view list, add a new category
+- launchApp:
+    clearState: true
+- runFlow: flows/dismiss-permissions.yaml
+
+# Wait for app to fully load
+- assertVisible:
+    text: "Carte"
+    enabled: true
+
+# Navigate to Settings
+- tapOn: "Paramètres"
+
+# Scroll to Categories section
+- scrollUntilVisible:
+    element: "Gérer les catégories"
+    direction: DOWN
+
+- tapOn: "Gérer les catégories"
+
+# Verify default categories are visible
+- assertVisible: "Restaurant"
+- assertVisible: "Bar"
+
+# Add a new category
+- tapOn:
+    id: "fab-add-category"
+
+# Fill in category name
+- assertVisible: "Nom"
+- tapOn: "Nom"
+- inputText: "Test Cat"
+- hideKeyboard
+
+# The first color and first icon are pre-selected by default,
+# so we can go straight to saving.
+
+# Submit the new category
+- tapOn: "Créer"
+
+# Verify we are back on the categories list and the new category appears
+- assertVisible: "Test Cat"
+- assertVisible: "Restaurant"
+- assertVisible: "Bar"

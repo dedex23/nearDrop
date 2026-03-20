@@ -1,4 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useColorScheme, View, Text as RNText, ScrollView as SV } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Stack, SplashScreen, useRouter } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';
 import * as Notifications from 'expo-notifications';
@@ -13,13 +16,14 @@ import { setupNotifications } from '@/services/notifications';
 import '@/services/location';
 // eslint-disable-next-line import/no-duplicates
 import { startBackgroundLocation, stopBackgroundLocation } from '@/services/location';
-import { theme } from '@/theme';
+import { lightTheme, darkTheme } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
 
 function RootLayoutInner() {
   const { isReady, error } = useDatabase();
   const loadPlaces = useAppStore((s) => s.loadPlaces);
+  const loadCategories = useAppStore((s) => s.loadCategories);
   const isTrackingEnabled = useSettingsStore((s) => s.isTrackingEnabled);
   const [hydrated, setHydrated] = useState(useSettingsStore.persist.hasHydrated());
   const router = useRouter();
@@ -32,12 +36,13 @@ function RootLayoutInner() {
     (async () => {
       try {
         await setupNotifications();
+        await loadCategories();
         await loadPlaces();
       } finally {
         SplashScreen.hideAsync();
       }
     })();
-  }, [isReady, loadPlaces]);
+  }, [isReady, loadCategories, loadPlaces]);
 
   // Wait for settings store hydration before acting on persisted values
   useEffect(() => {
@@ -81,6 +86,18 @@ function RootLayoutInner() {
 
   if (error) {
     console.error('[NearDrop] Database migration error:', error);
+    // Show error on screen so we can diagnose
+    SplashScreen.hideAsync();
+    return (
+      <View style={{ flex: 1, padding: 40, backgroundColor: '#B00020', justifyContent: 'center' }}>
+        <RNText style={{ color: '#fff', fontSize: 18, fontWeight: 'bold', marginBottom: 16 }}>
+          Migration Error
+        </RNText>
+        <SV>
+          <RNText style={{ color: '#fff', fontSize: 14 }}>{String(error)}</RNText>
+        </SV>
+      </View>
+    );
   }
 
   if (!isReady) return null;
@@ -89,18 +106,31 @@ function RootLayoutInner() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="place" />
-      <Stack.Screen name="import" />
+      <Stack.Screen name="categories" />
       <Stack.Screen name="share-intent" options={{ presentation: 'modal' }} />
     </Stack>
   );
 }
 
 export default function RootLayout() {
+  const colorScheme = useColorScheme();
+  const themeMode = useSettingsStore((s) => s.themeMode);
+  const activeTheme = useMemo(() => {
+    if (themeMode === 'light') return lightTheme;
+    if (themeMode === 'dark') return darkTheme;
+    return colorScheme === 'dark' ? darkTheme : lightTheme;
+  }, [themeMode, colorScheme]);
+
+  const isDark = activeTheme.dark;
+
   return (
-    <ShareIntentProvider>
-      <PaperProvider theme={theme}>
-        <RootLayoutInner />
-      </PaperProvider>
-    </ShareIntentProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ShareIntentProvider>
+        <PaperProvider theme={activeTheme}>
+          <StatusBar style={isDark ? 'light' : 'dark'} />
+          <RootLayoutInner />
+        </PaperProvider>
+      </ShareIntentProvider>
+    </GestureHandlerRootView>
   );
 }

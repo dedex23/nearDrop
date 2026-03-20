@@ -5,10 +5,10 @@ appId: com.neardrop.app
     clearState: true
 - runFlow: flows/dismiss-permissions.yaml
 
-# Start on Map tab
-- extendedWaitUntil:
-    visible: "Carte"
-    timeout: 15000
+# Start on Map tab — wait for it to load
+- assertVisible:
+    text: "Carte"
+    enabled: true
 
 # Navigate to Places tab
 - tapOn: "Lieux"
@@ -25,29 +25,24 @@ appId: com.neardrop.app
       - launchApp:
           clearState: true
       - runFlow: flows/dismiss-permissions.yaml
-      - extendedWaitUntil:
-          visible: "Carte"
-          timeout: 15000
+      - assertVisible:
+          text: "Carte"
+          enabled: true
       - tapOn: "Lieux"
+      - waitForAnimationToEnd
 
-- extendedWaitUntil:
-    visible:
-      id: "searchbar"
-    timeout: 15000
+- assertVisible:
+    id: "searchbar"
 
 # Navigate to Settings tab
 - tapOn:
     text: "Paramètres"
     retryTapIfNoChange: true
-- extendedWaitUntil:
-    visible: "Suivi en arrière-plan"
-    timeout: 10000
+- assertVisible: "Suivi en arrière-plan"
 
 # Navigate back to Map tab
 - tapOn:
     text: "Carte"
     retryTapIfNoChange: true
-- extendedWaitUntil:
-    visible:
-      id: "fab-add-place-map"
-    timeout: 10000
+- assertVisible:
+    id: "fab-add-place-map"

@@ -4,6 +4,7 @@ import {
   extractLocationHintFromText,
 } from '@/utils/address-parser';
 import { geocodeAddress } from './geocoding';
+import { useAppStore } from '@/stores/app-store';
 import type { SourceType } from '@/types';
 
 interface ParsedShareData {
@@ -255,23 +256,30 @@ async function enrichSocialShare(
   defaultName: string
 ): Promise<Partial<ParsedShareData>> {
   const name = extractNameBeforeUrl(rawText, url);
-  const notes = cleanTextForNotes(rawText, url);
-  console.log(`[NearDrop] enrichSocialShare: sourceType=${sourceType} name="${name}" url=${url}`);
+  let notes = cleanTextForNotes(rawText, url);
+  if (__DEV__) console.log(`[NearDrop] enrichSocialShare: sourceType=${sourceType} name="${name}" url=${url}`);
 
   // Step 1: Try to extract location from the shared text
   const textAddress = extractAddressFromText(rawText);
   const textHint = !textAddress ? extractLocationHintFromText(rawText) : null;
-  console.log(`[NearDrop] text extraction: address="${textAddress}" hint="${textHint}"`);
+  if (__DEV__) console.log(`[NearDrop] text extraction: address="${textAddress}" hint="${textHint}"`);
 
   // Step 2: Fetch OG metadata from the page
   const og = await fetchOgMetadata(url);
-  console.log(`[NearDrop] OG metadata:`, JSON.stringify(og));
+  if (__DEV__) console.log(`[NearDrop] OG metadata:`, JSON.stringify(og));
+
+  // Use OG description as notes if we don't have any
+  if (!notes && og?.description) {
+    // Clean up Instagram OG description format: "N likes, M comments - user on date: \"caption\""
+    const captionMatch = og.description.match(/:\s*"(.+?)"\s*\.?\s*$/s);
+    notes = captionMatch ? captionMatch[1].trim() : og.description;
+  }
 
   // Step 2a: Direct coordinates from OG tags (Facebook Places)
   if (og?.latitude != null && og?.longitude != null) {
-    console.log(`[NearDrop] using OG coordinates: ${og.latitude},${og.longitude}`);
+    if (__DEV__) console.log(`[NearDrop] using OG coordinates: ${og.latitude},${og.longitude}`);
     return {
-      name: name || og.title || defaultName,
+      name: name || extractPlaceNameFromOgTitle(og.title) || og.title || defaultName,
       latitude: og.latitude,
       longitude: og.longitude,
       sourceType,
@@ -284,18 +292,22 @@ async function enrichSocialShare(
   const ogDescription = og?.description ?? '';
   const ogAddress = extractAddressFromText(ogDescription);
   const ogHint = !ogAddress ? extractLocationHintFromText(ogDescription) : null;
-  console.log(`[NearDrop] OG description extraction: address="${ogAddress}" hint="${ogHint}"`);
+  if (__DEV__) console.log(`[NearDrop] OG description extraction: address="${ogAddress}" hint="${ogHint}"`);
 
+  const placeName = name || extractPlaceNameFromOgTitle(og?.title ?? null);
   const bestCandidate = textAddress || textHint || ogAddress || ogHint;
-  console.log(`[NearDrop] bestCandidate for geocoding: "${bestCandidate}"`);
+  if (__DEV__) console.log(`[NearDrop] bestCandidate for geocoding: "${bestCandidate}"`);
 
-  // Step 3: Geocode the best candidate
+  // Step 3: Geocode the best candidate, biased near user location
+  const userLocation = useAppStore.getState().userLocation;
+  if (__DEV__) console.log(`[NearDrop] geocoding with userLocation:`, userLocation ? `${userLocation.latitude},${userLocation.longitude}` : 'null');
+
   if (bestCandidate) {
-    const geocoded = await geocodeAddress(bestCandidate);
-    console.log(`[NearDrop] geocode result:`, JSON.stringify(geocoded));
+    const geocoded = await geocodeAddress(bestCandidate, userLocation);
+    if (__DEV__) console.log(`[NearDrop] geocode result:`, JSON.stringify(geocoded));
     if (geocoded) {
       return {
-        name: name || og?.title || defaultName,
+        name: placeName || og?.title || defaultName,
         address: bestCandidate,
         latitude: geocoded.latitude,
         longitude: geocoded.longitude,
@@ -306,10 +318,29 @@ async function enrichSocialShare(
     }
   }
 
-  console.log(`[NearDrop] no location found, returning without coordinates`);
+  // Step 4: No address/hint found — try geocoding the place name as last resort
+  // (e.g. Instagram profile page "Residence Kann" → geocode the name directly)
+  if (placeName) {
+    if (__DEV__) console.log(`[NearDrop] fallback: geocoding place name "${placeName}"`);
+    const geocoded = await geocodeAddress(placeName, userLocation);
+    if (__DEV__) console.log(`[NearDrop] geocode result:`, JSON.stringify(geocoded));
+    if (geocoded) {
+      return {
+        name: placeName,
+        address: geocoded.displayName,
+        latitude: geocoded.latitude,
+        longitude: geocoded.longitude,
+        sourceType,
+        sourceUrl: url,
+        notes,
+      };
+    }
+  }
+
+  if (__DEV__) console.log(`[NearDrop] no location found, returning without coordinates`);
   // Use OG title as name if available
   return {
-    name: name || og?.title || defaultName,
+    name: name || extractPlaceNameFromOgTitle(og?.title ?? null) || og?.title || defaultName,
     address: '',
     sourceType,
     sourceUrl: url,
@@ -392,6 +423,29 @@ function extractNameBeforeUrl(text: string, url: string): string {
   const lines = before.split('\n').filter((l) => l.trim());
   const name = lines[lines.length - 1]?.trim() || '';
   return name.substring(0, 80);
+}
+
+/** Extract a short place name from a long OG title (e.g. Instagram post caption) */
+function extractPlaceNameFromOgTitle(ogTitle: string | null): string {
+  if (!ogTitle) return '';
+
+  // Instagram profile: "Name (@handle) • Instagram photos and videos"
+  const profileMatch = ogTitle.match(/^(.+?)\s*\(@\w+\)\s*[•·]/);
+  if (profileMatch) {
+    return profileMatch[1].trim().substring(0, 60);
+  }
+
+  // Instagram post: "Display Name on Instagram: ..."
+  // The display name is usually the business/place name
+  const igMatch = ogTitle.match(/^(.+?)\s+on Instagram:/);
+  if (igMatch) {
+    return igMatch[1].trim().substring(0, 60);
+  }
+
+  // Short title — use as-is
+  if (ogTitle.length <= 60) return ogTitle;
+
+  return '';
 }
 
 /** Remove the URL from text and return the rest as notes */

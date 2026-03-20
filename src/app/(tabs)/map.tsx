@@ -1,43 +1,71 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useState, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { FAB, Badge, Text } from 'react-native-paper';
-import { useRouter } from 'expo-router';
+import { FAB, Badge, Text, useTheme } from 'react-native-paper';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import BottomSheet from '@gorhom/bottom-sheet';
 import { useAppStore } from '@/stores/app-store';
 import { useSettingsStore } from '@/stores/settings-store';
 import { useLocation } from '@/hooks/use-location';
 import { CategoryChips } from '@/components/category-chip';
 import MapViewComponent from '@/components/map-view';
+import { PlaceBottomSheet } from '@/components/place-bottom-sheet';
+import type { Place } from '@/types';
 
 export default function MapScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ lat?: string; lng?: string }>();
+  const theme = useTheme();
   const { location } = useLocation();
   const places = useAppStore((s) => s.places);
   const selectedCategory = useAppStore((s) => s.selectedCategory);
   const setSelectedCategory = useAppStore((s) => s.setSelectedCategory);
   const userLocation = useAppStore((s) => s.userLocation);
   const isTrackingEnabled = useSettingsStore((s) => s.isTrackingEnabled);
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const bottomSheetRef = useRef<BottomSheet>(null);
+
+  const handleMarkerPress = useCallback((place: Place) => {
+    setSelectedPlace(place);
+    bottomSheetRef.current?.snapToIndex(0);
+  }, []);
+
+  const handleDismiss = useCallback(() => {
+    setSelectedPlace(null);
+    bottomSheetRef.current?.close();
+  }, []);
 
   const filteredPlaces = useMemo(() => {
     if (!selectedCategory) return places;
-    return places.filter((p) => p.category === selectedCategory);
+    return places.filter((p) => p.categoryId === selectedCategory);
   }, [places, selectedCategory]);
 
-  const initialRegion = location
-    ? {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      }
-    : {
-        latitude: 48.8566,
-        longitude: 2.3522,
-        latitudeDelta: 0.1,
-        longitudeDelta: 0.1,
+  const initialRegion = useMemo(() => {
+    // If navigated with coordinates (e.g. after adding a place), center there
+    if (params.lat && params.lng) {
+      return {
+        latitude: parseFloat(params.lat),
+        longitude: parseFloat(params.lng),
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
       };
+    }
+    return location
+      ? {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        }
+      : {
+          latitude: 48.8566,
+          longitude: 2.3522,
+          latitudeDelta: 0.1,
+          longitudeDelta: 0.1,
+        };
+  }, [location, params.lat, params.lng]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <CategoryChips selected={selectedCategory} onSelect={setSelectedCategory} />
 
       <View style={styles.statusBar}>
@@ -46,7 +74,7 @@ export default function MapScreen() {
         >
           {isTrackingEnabled ? 'Actif' : 'En pause'}
         </Badge>
-        <Text variant="bodySmall" style={styles.countText}>
+        <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
           {filteredPlaces.length} lieux
         </Text>
       </View>
@@ -55,13 +83,20 @@ export default function MapScreen() {
         places={filteredPlaces}
         userLocation={userLocation}
         initialRegion={initialRegion}
+        onMarkerPress={handleMarkerPress}
       />
 
       <FAB
         testID="fab-add-place-map"
         icon="plus"
-        style={styles.fab}
+        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
         onPress={() => router.push('/place/add' as never)}
+      />
+
+      <PlaceBottomSheet
+        ref={bottomSheetRef}
+        place={selectedPlace}
+        onDismiss={handleDismiss}
       />
     </View>
   );
@@ -87,13 +122,9 @@ const styles = StyleSheet.create({
   badgeInactive: {
     backgroundColor: '#9E9E9E',
   },
-  countText: {
-    color: '#666',
-  },
   fab: {
     position: 'absolute',
     right: 16,
     bottom: 16,
-    backgroundColor: '#6200EE',
   },
 });

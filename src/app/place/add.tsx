@@ -1,4 +1,4 @@
-import React from 'react';
+import { Alert } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { PlaceForm } from '@/components/place-form';
 import { useAppStore } from '@/stores/app-store';
@@ -11,8 +11,16 @@ export default function AddPlaceScreen() {
   const defaultRadius = useSettingsStore((s) => s.defaultRadius);
 
   const handleSubmit = async (data: PlaceInsert) => {
-    await addPlace(data);
-    router.back();
+    try {
+      const place = await addPlace(data);
+      // Navigate to map tab centered on the new place
+      router.replace({
+        pathname: '/(tabs)/map',
+        params: { lat: place.latitude, lng: place.longitude },
+      } as never);
+    } catch (error) {
+      Alert.alert('Erreur', "Impossible d'ajouter le lieu.");
+    }
   };
 
   return (

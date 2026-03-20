@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
-import { View, FlatList, StyleSheet } from 'react-native';
-import { Searchbar, FAB, SegmentedButtons, Text } from 'react-native-paper';
+import { View, FlatList, StyleSheet, Alert } from 'react-native';
+import { Searchbar, FAB, SegmentedButtons, Text, useTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useAppStore } from '@/stores/app-store';
 import { PlaceCard } from '@/components/place-card';
@@ -9,17 +9,19 @@ import type { Place } from '@/types';
 
 export default function PlacesScreen() {
   const router = useRouter();
-  const {
-    places,
-    searchQuery,
-    setSearchQuery,
-    selectedCategory,
-    setSelectedCategory,
-    sortBy,
-    setSortBy,
-    isLoading,
-    loadPlaces,
-  } = useAppStore();
+  const theme = useTheme();
+  const places = useAppStore((s) => s.places);
+  const searchQuery = useAppStore((s) => s.searchQuery);
+  const setSearchQuery = useAppStore((s) => s.setSearchQuery);
+  const selectedCategory = useAppStore((s) => s.selectedCategory);
+  const setSelectedCategory = useAppStore((s) => s.setSelectedCategory);
+  const sortBy = useAppStore((s) => s.sortBy);
+  const setSortBy = useAppStore((s) => s.setSortBy);
+  const isLoading = useAppStore((s) => s.isLoading);
+  const loadPlaces = useAppStore((s) => s.loadPlaces);
+  const updatePlace = useAppStore((s) => s.updatePlace);
+  const removePlace = useAppStore((s) => s.removePlace);
+  const categories = useAppStore((s) => s.categories);
 
   const filteredAndSorted = useMemo(() => {
     let result = places;
@@ -30,14 +32,13 @@ export default function PlacesScreen() {
       result = result.filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
-          p.address.toLowerCase().includes(q) ||
-          p.tags.some((t) => t.toLowerCase().includes(q))
+          p.address.toLowerCase().includes(q)
       );
     }
 
     // Filter by category
     if (selectedCategory) {
-      result = result.filter((p) => p.category === selectedCategory);
+      result = result.filter((p) => p.categoryId === selectedCategory);
     }
 
     // Sort
@@ -45,46 +46,82 @@ export default function PlacesScreen() {
       switch (sortBy) {
         case 'name':
           return a.name.localeCompare(b.name);
-        case 'category':
-          return a.category.localeCompare(b.category);
+        case 'category': {
+          const catA = categories.find((c) => c.id === a.categoryId);
+          const catB = categories.find((c) => c.id === b.categoryId);
+          return (catA?.name ?? '').localeCompare(catB?.name ?? '');
+        }
         case 'date':
         default:
           return b.createdAt.getTime() - a.createdAt.getTime();
       }
     });
-  }, [places, searchQuery, selectedCategory, sortBy]);
+  }, [places, searchQuery, selectedCategory, sortBy, categories]);
+
+  const handleDelete = useCallback(
+    (place: Place) => {
+      Alert.alert(
+        'Supprimer le lieu',
+        `Voulez-vous vraiment supprimer "${place.name}" ?`,
+        [
+          { text: 'Annuler', style: 'cancel' },
+          {
+            text: 'Supprimer',
+            style: 'destructive',
+            onPress: () => removePlace(place.id),
+          },
+        ]
+      );
+    },
+    [removePlace]
+  );
+
+  const handleToggleActive = useCallback(
+    (id: string, active: boolean) => {
+      updatePlace(id, { isActive: active });
+    },
+    [updatePlace]
+  );
 
   const renderItem = useCallback(
     ({ item }: { item: Place }) => (
-      <PlaceCard place={item} onPress={() => router.push(`/place/${item.id}` as never)} />
+      <PlaceCard
+        place={item}
+        onPress={() => router.push(`/place/${item.id}` as never)}
+        onDelete={() => handleDelete(item)}
+        onToggleActive={(active) => handleToggleActive(item.id, active)}
+      />
     ),
-    [router]
+    [router, handleDelete, handleToggleActive]
   );
 
   return (
-    <View style={styles.container}>
-      <Searchbar
-        testID="searchbar"
-        placeholder="Rechercher un lieu..."
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        style={styles.searchbar}
-      />
-
-      <CategoryChips selected={selectedCategory} onSelect={setSelectedCategory} />
-
-      <SegmentedButtons
-        value={sortBy}
-        onValueChange={(v) => setSortBy(v as 'date' | 'name' | 'category')}
-        buttons={[
-          { value: 'date', label: 'Récent' },
-          { value: 'name', label: 'Nom' },
-          { value: 'category', label: 'Catégorie' },
-        ]}
-        style={styles.sortButtons}
-      />
-
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <FlatList
+        ListHeaderComponent={
+          <>
+            <Searchbar
+              testID="searchbar"
+              placeholder="Rechercher un lieu..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              style={styles.searchbar}
+            />
+
+            <CategoryChips selected={selectedCategory} onSelect={setSelectedCategory} />
+
+            <SegmentedButtons
+              value={sortBy}
+              onValueChange={(v) => setSortBy(v as 'date' | 'name' | 'category')}
+              buttons={[
+                { value: 'date', label: 'Récent' },
+                { value: 'name', label: 'Nom' },
+                { value: 'category', label: 'Catégorie' },
+              ]}
+              style={styles.sortButtons}
+            />
+          </>
+        }
         data={filteredAndSorted}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
@@ -93,10 +130,10 @@ export default function PlacesScreen() {
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text variant="bodyLarge" style={styles.emptyText}>
+            <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
               Aucun lieu
             </Text>
-            <Text variant="bodySmall" style={styles.emptySubtext}>
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 4 }}>
               Appuyez sur + pour ajouter votre premier lieu
             </Text>
           </View>
@@ -106,7 +143,7 @@ export default function PlacesScreen() {
       <FAB
         testID="fab-add-place"
         icon="plus"
-        style={styles.fab}
+        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
         onPress={() => router.push('/place/add' as never)}
       />
     </View>
@@ -116,7 +153,6 @@ export default function PlacesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
   },
   searchbar: {
     margin: 12,
@@ -133,17 +169,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 60,
   },
-  emptyText: {
-    color: '#666',
-  },
-  emptySubtext: {
-    color: '#999',
-    marginTop: 4,
-  },
   fab: {
     position: 'absolute',
     right: 16,
     bottom: 16,
-    backgroundColor: '#6200EE',
   },
 });
