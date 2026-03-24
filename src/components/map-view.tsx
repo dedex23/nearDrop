@@ -7,6 +7,7 @@ import { useTheme } from 'react-native-paper';
 import { useAppStore } from '@/stores/app-store';
 import { haversineDistance, formatDistance } from '@/utils/distance';
 import type { Place } from '@/types';
+import { CustomMarkerView } from '@/components/custom-marker';
 
 type Region = {
   latitude: number;
@@ -75,6 +76,7 @@ const MapViewComponent = React.forwardRef<MapViewHandle, Props>(function MapView
 
   return (
     <ClusteredMapView
+      key={places.map((p) => p.id).join(',')}
       ref={mapRef}
       provider={PROVIDER_GOOGLE}
       style={styles.map}
@@ -100,9 +102,11 @@ const MapViewComponent = React.forwardRef<MapViewHandle, Props>(function MapView
                 ? `${category?.name ?? ''} — ${formatDistance(distance)}`
                 : category?.name ?? ''
             }
-            pinColor={color}
             onPress={() => onMarkerPress?.(place)}
-          />
+            tracksViewChanges={false}
+          >
+            <CustomMarkerView color={color} icon={category?.icon ?? 'map-marker'} />
+          </Marker>
         );
       })}
       {/* Circles rendered separately — not clusterable */}

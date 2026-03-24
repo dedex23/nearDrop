@@ -5,6 +5,7 @@ import { Swipeable } from 'react-native-gesture-handler';
 import type { Place } from '@/types';
 import { haversineDistance, formatDistance } from '@/utils/distance';
 import { useAppStore } from '@/stores/app-store';
+import { CategoryIcon } from '@/components/category-icon';
 
 interface PlaceCardProps {
   place: Place;
@@ -112,7 +113,13 @@ export const PlaceCard = React.memo(function PlaceCard({ place, onPress, onDelet
           ) : null}
           <View style={styles.row}>
             <Chip
-              icon={category?.icon ?? 'map-marker'}
+              icon={({ size }) => (
+                <CategoryIcon
+                  icon={category?.icon ?? 'map-marker'}
+                  size={size}
+                  color={category?.color ?? '#757575'}
+                />
+              )}
               compact
               style={{ backgroundColor: (category?.color ?? '#757575') + '20' }}
               textStyle={{ color: category?.color ?? '#757575', fontSize: 12 }}

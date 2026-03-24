@@ -24,7 +24,8 @@ export default function MapScreen() {
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const prevPlacesCount = useRef(places.length);
+  const prevPlacesCount = useRef(0);
+  const isInitialLoad = useRef(true);
 
   const handleMarkerPress = useCallback((place: Place) => {
     setSelectedPlace(place);
@@ -71,9 +72,13 @@ export default function MapScreen() {
     return null;
   }, [params.lat, params.lng]);
 
-  // Show snackbar when a new place is added
+  // Show snackbar when a new place is added (skip initial load from DB)
   useEffect(() => {
-    if (places.length > prevPlacesCount.current) {
+    if (isInitialLoad.current) {
+      if (places.length > 0) {
+        isInitialLoad.current = false;
+      }
+    } else if (places.length > prevPlacesCount.current) {
       setSnackbarVisible(true);
     }
     prevPlacesCount.current = places.length;
