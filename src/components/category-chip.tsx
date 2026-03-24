@@ -1,6 +1,7 @@
 import { ScrollView, StyleSheet } from 'react-native';
 import { Chip, useTheme } from 'react-native-paper';
 import { useAppStore } from '@/stores/app-store';
+import { CategoryIcon } from '@/components/category-icon';
 
 interface CategoryChipsProps {
   selected: string | null;
@@ -23,7 +24,9 @@ export function CategoryChips({ selected, onSelect }: CategoryChipsProps) {
         return (
           <Chip
             key={cat.id}
-            icon={cat.icon}
+            icon={({ size }) => (
+              <CategoryIcon icon={cat.icon} size={size} color={cat.color} />
+            )}
             selected={isSelected}
             onPress={() => onSelect(isSelected ? null : cat.id)}
             style={[styles.chip, { backgroundColor: isSelected ? cat.color + '20' : theme.colors.surfaceVariant }]}
@@ -53,7 +56,9 @@ export function CategoryPicker({ value, onChange }: CategoryPickerProps) {
         return (
           <Chip
             key={cat.id}
-            icon={cat.icon}
+            icon={({ size }) => (
+              <CategoryIcon icon={cat.icon} size={size} color={cat.color} />
+            )}
             selected={isSelected}
             onPress={() => onChange(cat.id)}
             style={[styles.chip, { backgroundColor: isSelected ? cat.color + '30' : theme.colors.surfaceVariant }]}

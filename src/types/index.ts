@@ -49,8 +49,6 @@ export type ThemeMode = 'system' | 'light' | 'dark';
 export interface Settings {
   defaultRadius: number;
   cooldownHours: number;
-  activeHoursStart: number;
-  activeHoursEnd: number;
   isQuietMode: boolean;
   isTrackingEnabled: boolean;
   themeMode: ThemeMode;
@@ -59,8 +57,6 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   defaultRadius: 150,
   cooldownHours: 24,
-  activeHoursStart: 10,
-  activeHoursEnd: 22,
   isQuietMode: false,
   isTrackingEnabled: false,
   themeMode: 'system',

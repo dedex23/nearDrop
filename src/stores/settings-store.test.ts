@@ -25,16 +25,6 @@ describe('settings-store', () => {
     expect(useSettingsStore.getState().cooldownHours).toBe(168);
   });
 
-  test('validates activeHoursStart range', () => {
-    useSettingsStore.getState().updateSettings({ activeHoursStart: 25 });
-    expect(useSettingsStore.getState().activeHoursStart).toBe(23);
-  });
-
-  test('validates activeHoursEnd range', () => {
-    useSettingsStore.getState().updateSettings({ activeHoursEnd: -1 });
-    expect(useSettingsStore.getState().activeHoursEnd).toBe(0);
-  });
-
   test('accepts valid themeMode', () => {
     useSettingsStore.getState().updateSettings({ themeMode: 'dark' });
     expect(useSettingsStore.getState().themeMode).toBe('dark');

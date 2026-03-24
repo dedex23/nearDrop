@@ -52,8 +52,6 @@ function defaultSettings() {
   return {
     defaultRadius: 150,
     cooldownHours: 24,
-    activeHoursStart: 10,
-    activeHoursEnd: 22,
     isQuietMode: false,
     isTrackingEnabled: true,
     themeMode: 'system' as const,
@@ -94,97 +92,6 @@ describe('checkGeofences', () => {
       mockGetActivePlaces.mockResolvedValue([]);
       await checkGeofences(48.8566, 2.3522);
       expect(mockGetActivePlaces).toHaveBeenCalled();
-    });
-  });
-
-  // --- Active hours: normal range (10→22) ---
-  describe('active hours — normal range (10→22)', () => {
-    it('proceeds at 14:00', async () => {
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date('2024-06-15T14:00:00'));
-      mockGetActivePlaces.mockResolvedValue([]);
-
-      await checkGeofences(48.8566, 2.3522);
-      expect(mockGetActivePlaces).toHaveBeenCalled();
-    });
-
-    it('skips at 09:00 (before start)', async () => {
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date('2024-06-15T09:00:00'));
-
-      await checkGeofences(48.8566, 2.3522);
-      expect(mockGetActivePlaces).not.toHaveBeenCalled();
-    });
-
-    it('skips at 22:00 (uses < not <=)', async () => {
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date('2024-06-15T22:00:00'));
-
-      await checkGeofences(48.8566, 2.3522);
-      expect(mockGetActivePlaces).not.toHaveBeenCalled();
-    });
-
-    it('proceeds at 10:00 (uses >=)', async () => {
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date('2024-06-15T10:00:00'));
-      mockGetActivePlaces.mockResolvedValue([]);
-
-      await checkGeofences(48.8566, 2.3522);
-      expect(mockGetActivePlaces).toHaveBeenCalled();
-    });
-  });
-
-  // --- Active hours: overnight range (22→06) ---
-  describe('active hours — overnight range (22→06)', () => {
-    beforeEach(() => {
-      jest.spyOn(useSettingsStore, 'getState').mockReturnValue({
-        ...defaultSettings(),
-        activeHoursStart: 22,
-        activeHoursEnd: 6,
-      });
-    });
-
-    it('proceeds at 23:00', async () => {
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date('2024-06-15T23:00:00'));
-      mockGetActivePlaces.mockResolvedValue([]);
-
-      await checkGeofences(48.8566, 2.3522);
-      expect(mockGetActivePlaces).toHaveBeenCalled();
-    });
-
-    it('proceeds at 02:00', async () => {
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date('2024-06-16T02:00:00'));
-      mockGetActivePlaces.mockResolvedValue([]);
-
-      await checkGeofences(48.8566, 2.3522);
-      expect(mockGetActivePlaces).toHaveBeenCalled();
-    });
-
-    it('proceeds at 00:00 (midnight)', async () => {
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date('2024-06-16T00:00:00'));
-      mockGetActivePlaces.mockResolvedValue([]);
-
-      await checkGeofences(48.8566, 2.3522);
-      expect(mockGetActivePlaces).toHaveBeenCalled();
-    });
-
-    it('skips at 06:00', async () => {
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date('2024-06-16T06:00:00'));
-
-      await checkGeofences(48.8566, 2.3522);
-      expect(mockGetActivePlaces).not.toHaveBeenCalled();
-    });
-
-    it('skips at 14:00', async () => {
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date('2024-06-16T14:00:00'));
-
-      await checkGeofences(48.8566, 2.3522);
-      expect(mockGetActivePlaces).not.toHaveBeenCalled();
     });
   });
 

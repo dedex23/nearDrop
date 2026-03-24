@@ -4,6 +4,7 @@ import { Text, Button, Chip, Divider, useTheme } from 'react-native-paper';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
 import { useAppStore } from '@/stores/app-store';
+import { CategoryIcon } from '@/components/category-icon';
 import { haversineDistance, formatDistance } from '@/utils/distance';
 import type { Place } from '@/types';
 
@@ -52,7 +53,9 @@ export const PlaceBottomSheet = forwardRef<BottomSheet, PlaceBottomSheetProps>(
           <Text variant="headlineSmall">{place?.name}</Text>
           {category && (
             <Chip
-              icon={category.icon}
+              icon={({ size }) => (
+                <CategoryIcon icon={category.icon} size={size} color={category.color} />
+              )}
               compact
               style={[styles.chip, { backgroundColor: category.color + '20' }]}
               textStyle={{ color: category.color }}

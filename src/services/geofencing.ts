@@ -17,7 +17,7 @@ export function _resetGeofenceLock() {
 
 /**
  * Main geofencing check. Called on every background location update.
- * 1. Check quiet mode & active hours
+ * 1. Check quiet mode
  * 2. Load active places
  * 3. Pre-filter by bounding box (fast)
  * 4. Calculate exact Haversine distance for candidates
@@ -35,12 +35,6 @@ export async function checkGeofences(currentLat: number, currentLon: number): Pr
     // Skip if quiet mode is on
     if (settings.isQuietMode) {
       console.log('[NearDrop][Geo] Skipped (quiet mode)');
-      return;
-    }
-
-    // Skip if outside active hours
-    if (!isWithinActiveHours(settings.activeHoursStart, settings.activeHoursEnd)) {
-      console.log('[NearDrop][Geo] Skipped (outside active hours', settings.activeHoursStart, '-', settings.activeHoursEnd, ', now:', new Date().getHours(), ')');
       return;
     }
 
@@ -97,14 +91,4 @@ function isCooldownActive(place: Place, cooldownMs: number): boolean {
   if (!place.notifiedAt) return false;
   const elapsed = Date.now() - place.notifiedAt.getTime();
   return elapsed < cooldownMs;
-}
-
-function isWithinActiveHours(start: number, end: number): boolean {
-  const now = new Date().getHours();
-  if (start <= end) {
-    // e.g. 10-22: active between 10:00 and 22:00
-    return now >= start && now < end;
-  }
-  // e.g. 22-06: active from 22:00 to 06:00 (night mode)
-  return now >= start || now < end;
 }

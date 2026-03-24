@@ -5,6 +5,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAppStore } from '@/stores/app-store';
 import { CATEGORY_ICON_OPTIONS } from '@/utils/constants';
+import { CategoryIcon } from '@/components/category-icon';
+import { isEmoji } from '@/utils/icon';
 
 const PRESET_COLORS = [
   '#E53935',
@@ -117,6 +119,22 @@ export default function CategoryEditScreen() {
         Icône
       </Text>
 
+      {isEmoji(icon) && (
+        <View style={styles.emojiPreview}>
+          <View
+            style={[
+              styles.emojiPreviewCircle,
+              { backgroundColor: color || theme.colors.primaryContainer },
+            ]}
+          >
+            <CategoryIcon icon={icon} size={24} color="#fff" />
+          </View>
+          <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+            Emoji sélectionné
+          </Text>
+        </View>
+      )}
+
       <View style={styles.emojiRow}>
         <TextInput
           label="Emoji personnalisé"
@@ -219,6 +237,19 @@ const styles = StyleSheet.create({
   },
   emojiButton: {
     marginTop: 6,
+  },
+  emojiPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 12,
+  },
+  emojiPreviewCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   saveButton: {
     marginTop: 16,

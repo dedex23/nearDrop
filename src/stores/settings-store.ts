@@ -20,12 +20,6 @@ export const useSettingsStore = create<SettingsState>()(
         if (validated.cooldownHours !== undefined) {
           validated.cooldownHours = Math.max(1, Math.min(168, Math.round(validated.cooldownHours)));
         }
-        if (validated.activeHoursStart !== undefined) {
-          validated.activeHoursStart = Math.max(0, Math.min(23, Math.round(validated.activeHoursStart)));
-        }
-        if (validated.activeHoursEnd !== undefined) {
-          validated.activeHoursEnd = Math.max(0, Math.min(23, Math.round(validated.activeHoursEnd)));
-        }
         if (
           validated.themeMode !== undefined &&
           !['system', 'light', 'dark'].includes(validated.themeMode)
