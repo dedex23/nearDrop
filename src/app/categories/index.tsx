@@ -1,7 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, FlatList, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import { FAB, IconButton, Text, useTheme } from 'react-native-paper';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
+import DraggableFlatList, { type RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { useAppStore } from '@/stores/app-store';
 import { MAX_CATEGORIES } from '@/types';
 import type { Category } from '@/types';
@@ -31,6 +34,11 @@ export default function CategoriesListScreen() {
   }, [loadCounts]);
 
   const sorted = useMemo(() => [...categories].sort((a, b) => a.sortOrder - b.sortOrder), [categories]);
+  const [localData, setLocalData] = useState(sorted);
+
+  useEffect(() => {
+    setLocalData(sorted);
+  }, [sorted]);
 
   const handleDelete = useCallback(
     async (cat: Category) => {
@@ -60,24 +68,12 @@ export default function CategoriesListScreen() {
     [placeCounts, removeCategory]
   );
 
-  const handleMoveUp = useCallback(
-    async (index: number) => {
-      if (index <= 0) return;
-      const ids = sorted.map((c) => c.id);
-      [ids[index - 1], ids[index]] = [ids[index], ids[index - 1]];
-      await reorderCategories(ids);
+  const handleDragEnd = useCallback(
+    ({ data }: { data: Category[] }) => {
+      setLocalData(data);
+      reorderCategories(data.map((c) => c.id));
     },
-    [sorted, reorderCategories]
-  );
-
-  const handleMoveDown = useCallback(
-    async (index: number) => {
-      if (index >= sorted.length - 1) return;
-      const ids = sorted.map((c) => c.id);
-      [ids[index], ids[index + 1]] = [ids[index + 1], ids[index]];
-      await reorderCategories(ids);
-    },
-    [sorted, reorderCategories]
+    [reorderCategories]
   );
 
   const handleAdd = useCallback(() => {
@@ -89,52 +85,48 @@ export default function CategoriesListScreen() {
   }, [categories.length, router]);
 
   const renderItem = useCallback(
-    ({ item, index }: { item: Category; index: number }) => {
+    ({ item, drag }: RenderItemParams<Category>) => {
       const count = placeCounts[item.id] ?? 0;
       return (
-        <View style={[styles.row, { backgroundColor: theme.colors.surface }]}>
-          <View style={[styles.colorDot, { backgroundColor: item.color }]} />
-          <View style={styles.info}>
-            <Text variant="bodyLarge">{item.name}</Text>
-            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-              {count} lieu{count !== 1 ? 'x' : ''}
-            </Text>
-          </View>
-          <IconButton
-            icon="arrow-up"
-            size={20}
-            disabled={index === 0}
-            onPress={() => handleMoveUp(index)}
-          />
-          <IconButton
-            icon="arrow-down"
-            size={20}
-            disabled={index === sorted.length - 1}
-            onPress={() => handleMoveDown(index)}
-          />
-          <IconButton
-            icon="pencil"
-            size={20}
-            onPress={() => router.push(`/categories/edit?id=${item.id}` as never)}
-          />
-          <IconButton
-            icon="delete"
-            size={20}
-            iconColor={count > 0 ? theme.colors.outline : theme.colors.error}
-            onPress={() => handleDelete(item)}
-          />
-        </View>
+        <ScaleDecorator>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onLongPress={drag}
+            style={[styles.row, { backgroundColor: theme.colors.surface }]}
+          >
+            <MaterialCommunityIcons name="drag" size={20} color={theme.colors.onSurfaceVariant} />
+            <View style={[styles.colorDot, { backgroundColor: item.color }]} />
+            <View style={styles.info}>
+              <Text variant="bodyLarge">{item.name}</Text>
+              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                {count} lieu{count !== 1 ? 'x' : ''}
+              </Text>
+            </View>
+            <IconButton
+              icon="pencil"
+              size={20}
+              onPress={() => router.push(`/categories/edit?id=${item.id}` as never)}
+            />
+            <IconButton
+              icon="delete"
+              size={20}
+              iconColor={count > 0 ? theme.colors.outline : theme.colors.error}
+              onPress={() => handleDelete(item)}
+            />
+          </TouchableOpacity>
+        </ScaleDecorator>
       );
     },
-    [placeCounts, theme, sorted.length, handleMoveUp, handleMoveDown, handleDelete, router]
+    [placeCounts, theme, handleDelete, router]
   );
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <FlatList
-        data={sorted}
+      <DraggableFlatList
+        data={localData}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
+        onDragEnd={handleDragEnd}
         contentContainerStyle={styles.list}
       />
       <FAB
