@@ -4,6 +4,7 @@ import { Text, Button, Chip, Switch, Divider, IconButton, useTheme } from 'react
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import Slider from '@react-native-community/slider';
 import { useAppStore } from '@/stores/app-store';
+import { CategoryIcon } from '@/components/category-icon';
 import { PlaceForm } from '@/components/place-form';
 import { haversineDistance, formatDistance } from '@/utils/distance';
 import type { PlaceInsert } from '@/types';
@@ -134,13 +135,21 @@ export default function PlaceDetailScreen() {
       <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
         <View style={styles.header}>
           <Text variant="headlineMedium">{place.name}</Text>
-          <Chip
-            icon={category?.icon ?? 'map-marker'}
-            style={[styles.categoryChip, { backgroundColor: (category?.color ?? '#757575') + '20' }]}
-            textStyle={{ color: category?.color ?? '#757575' }}
-          >
-            {category?.name ?? ''}
-          </Chip>
+          {category && (
+            <Chip
+              icon={({ size }) => (
+                <CategoryIcon
+                  icon={category.icon}
+                  size={size}
+                  color={category.color}
+                />
+              )}
+              style={[styles.categoryChip, { backgroundColor: category.color + '20' }]}
+              textStyle={{ color: category.color }}
+            >
+              {category.name}
+            </Chip>
+          )}
         </View>
 
         <Text variant="bodyLarge" style={{ color: theme.colors.onSurface, marginBottom: 4 }}>
