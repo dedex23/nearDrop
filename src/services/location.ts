@@ -59,12 +59,14 @@ export async function startBackgroundLocation(): Promise<boolean> {
     return false;
   }
 
-  const isStarted = await Location.hasStartedLocationUpdatesAsync(BACKGROUND_LOCATION_TASK).catch(
-    () => false
-  );
-  if (isStarted) {
-    console.log('[NearDrop][Location] Already started, skipping');
-    return true;
+  // Always stop then restart: hasStartedLocationUpdatesAsync can return true
+  // even when the foreground service was killed by the OS (stale SharedPreferences),
+  // preventing recovery. A stop+start cycle guarantees a fresh foreground service.
+  try {
+    await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
+    console.log('[NearDrop][Location] Stopped previous registration');
+  } catch {
+    // Not registered yet — expected on first launch
   }
 
   const opts = {

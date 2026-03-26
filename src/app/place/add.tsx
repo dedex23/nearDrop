@@ -16,7 +16,7 @@ export default function AddPlaceScreen() {
       // Navigate to map tab centered on the new place
       router.replace({
         pathname: '/(tabs)/map',
-        params: { lat: place.latitude, lng: place.longitude },
+        params: { lat: place.latitude, lng: place.longitude, t: Date.now() },
       } as never);
     } catch (error) {
       console.error('[NearDrop] Failed to add place:', error);

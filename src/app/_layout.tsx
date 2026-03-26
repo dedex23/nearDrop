@@ -18,7 +18,33 @@ import '@/services/location';
 import { startBackgroundLocation, stopBackgroundLocation } from '@/services/location';
 import { lightTheme, darkTheme } from '@/theme';
 
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {});
+
+// Silence ExpoKeepAwake errors when the JS bundle runs in the background
+// without an Android Activity (e.g. after OS kills the app and the background
+// location task restarts the process).
+const _origHandler = ErrorUtils.getGlobalHandler();
+ErrorUtils.setGlobalHandler((error, isFatal) => {
+  if (!isFatal && String(error).includes('ExpoKeepAwake')) {
+    if (__DEV__)
+      console.warn('[NearDrop] ExpoKeepAwake suppressed (sync):', (error as Error)?.stack ?? error);
+    return;
+  }
+  _origHandler(error, isFatal);
+});
+// Also catch unhandled promise rejections from ExpoKeepAwake
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _g = global as any;
+const _origRejection = _g.onunhandledrejection;
+_g.onunhandledrejection = (e: { reason?: unknown; preventDefault?: () => void }) => {
+  if (String(e?.reason).includes('ExpoKeepAwake')) {
+    if (__DEV__)
+      console.warn('[NearDrop] ExpoKeepAwake suppressed (promise):', (e?.reason as Error)?.stack ?? e?.reason);
+    e?.preventDefault?.();
+    return;
+  }
+  _origRejection?.(e);
+};
 
 function RootLayoutInner() {
   const { isReady, error } = useDatabase();
@@ -39,7 +65,7 @@ function RootLayoutInner() {
         await loadCategories();
         await loadPlaces();
       } finally {
-        SplashScreen.hideAsync();
+        SplashScreen.hideAsync().catch(() => {});
       }
     })();
   }, [isReady, loadCategories, loadPlaces]);
@@ -61,21 +87,23 @@ function RootLayoutInner() {
     }
   }, [isTrackingEnabled, isReady, hydrated]);
 
-  // Handle notification tap → navigate to place detail
+  // Handle notification tap → navigate to map centered on the place
+  const lastNotification = Notifications.useLastNotificationResponse();
   useEffect(() => {
-    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-      const placeId = response.notification.request.content.data?.placeId as string | undefined;
-      const placeIds = response.notification.request.content.data?.placeIds as
-        | string[]
-        | undefined;
-      const targetId = placeId || placeIds?.[0];
-      if (targetId) {
-        router.push(`/place/${targetId}`);
-      }
-    });
-    return () => subscription.remove();
+    if (!lastNotification) return;
+    const data = lastNotification.notification.request.content.data;
+    const lat = data?.lat as number | undefined;
+    const lng = data?.lng as number | undefined;
+    if (lat !== undefined && lng !== undefined) {
+      router.navigate({
+        pathname: '/(tabs)/map',
+        params: { lat, lng, t: Date.now() },
+      } as never);
+    } else {
+      router.navigate('/(tabs)/map' as never);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // router is a stable Expo Router singleton
+  }, [lastNotification]); // router is a stable Expo Router singleton
 
   // Handle share intent → navigate to share screen (push, not replace, to keep tabs mounted)
   useEffect(() => {
@@ -87,7 +115,7 @@ function RootLayoutInner() {
   if (error) {
     console.error('[NearDrop] Database migration error:', error);
     // Show error on screen so we can diagnose
-    SplashScreen.hideAsync();
+    SplashScreen.hideAsync().catch(() => {});
     return (
       <View style={{ flex: 1, padding: 40, backgroundColor: '#B00020', justifyContent: 'center' }}>
         <RNText style={{ color: '#fff', fontSize: 18, fontWeight: 'bold', marginBottom: 16 }}>
