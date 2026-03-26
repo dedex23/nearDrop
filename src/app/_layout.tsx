@@ -18,7 +18,9 @@ import '@/services/location';
 import { startBackgroundLocation, stopBackgroundLocation } from '@/services/location';
 import { lightTheme, darkTheme } from '@/theme';
 
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {
+  // Expected when the JS bundle restarts in the background (no Activity available)
+});
 
 function RootLayoutInner() {
   const { isReady, error } = useDatabase();
