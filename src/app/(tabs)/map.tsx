@@ -7,7 +7,7 @@ import { useAppStore } from '@/stores/app-store';
 import { useSettingsStore } from '@/stores/settings-store';
 import { useLocation } from '@/hooks/use-location';
 import { CategoryChips } from '@/components/category-chip';
-import MapViewComponent from '@/components/map-view';
+import MapViewComponent, { type MapViewHandle } from '@/components/map-view';
 import { PlaceBottomSheet } from '@/components/place-bottom-sheet';
 import type { Place } from '@/types';
 
@@ -23,9 +23,11 @@ export default function MapScreen() {
   const isTrackingEnabled = useSettingsStore((s) => s.isTrackingEnabled);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const mapViewRef = useRef<MapViewHandle>(null);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const prevPlacesCount = useRef(0);
   const isInitialLoad = useRef(true);
+  const hasAnimatedToUser = useRef(false);
 
   const handleMarkerPress = useCallback((place: Place) => {
     setSelectedPlace(place);
@@ -59,17 +61,36 @@ export default function MapScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only compute once on mount
 
-  // Animate to coordinates when navigated from add/share-intent
-  const focusRegion = useMemo(() => {
-    if (params.lat && params.lng) {
-      return {
-        latitude: parseFloat(params.lat),
-        longitude: parseFloat(params.lng),
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      };
+  // Animate to user location on first load
+  useEffect(() => {
+    if (!hasAnimatedToUser.current && userLocation) {
+      hasAnimatedToUser.current = true;
+      // Delay to ensure the map is fully mounted before animating
+      const timer = setTimeout(() => {
+        mapViewRef.current?.animateToRegion({
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        });
+      }, 300);
+      return () => clearTimeout(timer);
     }
-    return null;
+  }, [userLocation]);
+
+  // Animate to coordinates when navigated from add/share-intent
+  useEffect(() => {
+    if (params.lat && params.lng) {
+      const timer = setTimeout(() => {
+        mapViewRef.current?.animateToRegion({
+          latitude: parseFloat(params.lat!),
+          longitude: parseFloat(params.lng!),
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        });
+      }, 300);
+      return () => clearTimeout(timer);
+    }
   }, [params.lat, params.lng]);
 
   // Show snackbar when a new place is added (skip initial load from DB)
@@ -100,10 +121,10 @@ export default function MapScreen() {
       </View>
 
       <MapViewComponent
+        ref={mapViewRef}
         places={filteredPlaces}
         userLocation={userLocation}
         initialRegion={initialRegion}
-        focusRegion={focusRegion}
         onMarkerPress={handleMarkerPress}
       />
 

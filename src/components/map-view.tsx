@@ -1,4 +1,4 @@
-import React, { useEffect, useImperativeHandle, useMemo, useRef } from 'react';
+import React, { useImperativeHandle, useMemo, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import ClusteredMapView from 'react-native-map-clustering';
 import { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -20,7 +20,6 @@ type Props = {
   places: Place[];
   userLocation: { latitude: number; longitude: number } | null;
   initialRegion: Region;
-  focusRegion?: Region | null;
   onMarkerPress?: (place: Place) => void;
 };
 
@@ -29,7 +28,7 @@ export type MapViewHandle = {
 };
 
 const MapViewComponent = React.forwardRef<MapViewHandle, Props>(function MapViewComponent(
-  { places, userLocation, initialRegion, focusRegion, onMarkerPress },
+  { places, userLocation, initialRegion, onMarkerPress },
   ref,
 ) {
   const theme = useTheme();
@@ -42,12 +41,6 @@ const MapViewComponent = React.forwardRef<MapViewHandle, Props>(function MapView
     },
   }));
 
-  // Animate to focusRegion when it changes
-  useEffect(() => {
-    if (focusRegion) {
-      mapRef.current?.animateToRegion(focusRegion, 500);
-    }
-  }, [focusRegion]);
 
   const categoryMap = useMemo(
     () => new Map(categories.map((c) => [c.id, c])),
