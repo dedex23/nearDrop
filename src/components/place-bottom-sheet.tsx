@@ -1,5 +1,5 @@
 import React, { forwardRef, useMemo } from 'react';
-import { StyleSheet } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { Text, Button, Chip, Divider, useTheme } from 'react-native-paper';
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
@@ -11,13 +11,15 @@ import type { Place } from '@/types';
 interface PlaceBottomSheetProps {
   place: Place | null;
   onDismiss: () => void;
+  onDelete?: () => void;
 }
 
 export const PlaceBottomSheet = forwardRef<BottomSheet, PlaceBottomSheetProps>(
-  function PlaceBottomSheet({ place, onDismiss }, ref) {
+  function PlaceBottomSheet({ place, onDismiss, onDelete }, ref) {
     const router = useRouter();
     const theme = useTheme();
     const categories = useAppStore((s) => s.categories);
+    const removePlace = useAppStore((s) => s.removePlace);
     const userLocation = useAppStore((s) => s.userLocation);
     const snapPoints = useMemo(() => ['30%', '60%'], []);
 
@@ -83,16 +85,39 @@ export const PlaceBottomSheet = forwardRef<BottomSheet, PlaceBottomSheetProps>(
             </>
           ) : null}
           {place && (
-            <Button
-              mode="contained"
-              onPress={() => {
-                onDismiss();
-                router.push(`/place/${place.id}` as never);
-              }}
-              style={styles.detailButton}
-            >
-              Voir le détail
-            </Button>
+            <View style={styles.actions}>
+              <Button
+                mode="contained"
+                onPress={() => {
+                  onDismiss();
+                  router.push(`/place/${place.id}` as never);
+                }}
+                style={styles.actionButton}
+              >
+                Voir le détail
+              </Button>
+              <Button
+                mode="outlined"
+                textColor={theme.colors.error}
+                onPress={() => {
+                  Alert.alert('Supprimer', `Supprimer « ${place.name} » ?`, [
+                    { text: 'Annuler', style: 'cancel' },
+                    {
+                      text: 'Supprimer',
+                      style: 'destructive',
+                      onPress: async () => {
+                        onDismiss();
+                        await removePlace(place.id);
+                        onDelete?.();
+                      },
+                    },
+                  ]);
+                }}
+                style={[styles.actionButton, { borderColor: theme.colors.error }]}
+              >
+                Supprimer
+              </Button>
+            </View>
           )}
         </BottomSheetScrollView>
       </BottomSheet>
@@ -105,5 +130,6 @@ const styles = StyleSheet.create({
   chip: { alignSelf: 'flex-start', marginTop: 8 },
   divider: { marginVertical: 12 },
   notesScroll: { maxHeight: 120, marginTop: 8 },
-  detailButton: { marginTop: 16 },
+  actions: { flexDirection: 'row', gap: 12, marginTop: 16 },
+  actionButton: { flex: 1 },
 });

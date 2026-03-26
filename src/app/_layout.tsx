@@ -63,7 +63,7 @@ function RootLayoutInner() {
     }
   }, [isTrackingEnabled, isReady, hydrated]);
 
-  // Handle notification tap → navigate to place detail
+  // Handle notification tap → navigate to map centered on the place
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
       const placeId = response.notification.request.content.data?.placeId as string | undefined;
@@ -72,7 +72,15 @@ function RootLayoutInner() {
         | undefined;
       const targetId = placeId || placeIds?.[0];
       if (targetId) {
-        router.push(`/place/${targetId}`);
+        const place = useAppStore.getState().places.find((p) => p.id === targetId);
+        if (place) {
+          router.navigate({
+            pathname: '/(tabs)/map',
+            params: { lat: place.latitude, lng: place.longitude, t: Date.now() },
+          } as never);
+        } else {
+          router.navigate('/(tabs)/map' as never);
+        }
       }
     });
     return () => subscription.remove();

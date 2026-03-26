@@ -13,7 +13,7 @@ import type { Place } from '@/types';
 
 export default function MapScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ lat?: string; lng?: string }>();
+  const params = useLocalSearchParams<{ lat?: string; lng?: string; t?: string }>();
   const theme = useTheme();
   const { location } = useLocation();
   const places = useAppStore((s) => s.places);
@@ -38,6 +38,19 @@ export default function MapScreen() {
     setSelectedPlace(null);
     bottomSheetRef.current?.close();
   }, []);
+
+  const handleDelete = useCallback(() => {
+    if (userLocation) {
+      setTimeout(() => {
+        mapViewRef.current?.animateToRegion({
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        });
+      }, 500);
+    }
+  }, [userLocation]);
 
   const filteredPlaces = useMemo(() => {
     if (!selectedCategory) return places;
@@ -85,13 +98,13 @@ export default function MapScreen() {
         mapViewRef.current?.animateToRegion({
           latitude: parseFloat(params.lat!),
           longitude: parseFloat(params.lng!),
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
+          latitudeDelta: 0.002,
+          longitudeDelta: 0.002,
         });
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [params.lat, params.lng]);
+  }, [params.lat, params.lng, params.t]);
 
   // Show snackbar when a new place is added (skip initial load from DB)
   useEffect(() => {
@@ -139,6 +152,7 @@ export default function MapScreen() {
         ref={bottomSheetRef}
         place={selectedPlace}
         onDismiss={handleDismiss}
+        onDelete={handleDelete}
       />
 
       <Snackbar

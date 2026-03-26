@@ -41,7 +41,6 @@ const MapViewComponent = React.forwardRef<MapViewHandle, Props>(function MapView
     },
   }));
 
-
   const categoryMap = useMemo(
     () => new Map(categories.map((c) => [c.id, c])),
     [categories]
