@@ -30,8 +30,9 @@ export async function checkGeofences(currentLat: number, currentLon: number): Pr
   }
   isChecking = true;
   try {
-    // Ensure settings are hydrated from AsyncStorage (critical for background cold starts
-    // where the React component tree doesn't mount and hydration doesn't happen automatically)
+    // Ensure settings are hydrated from AsyncStorage.
+    // This is critical for background cold starts where the React component tree doesn't mount
+    // and hydration doesn't happen automatically.
     if (!useSettingsStore.persist.hasHydrated()) {
       await useSettingsStore.persist.rehydrate();
     }

@@ -69,9 +69,32 @@ beforeEach(() => {
     { id: 'cat-restaurant', name: 'Restaurant', color: '#FF5722', icon: 'food', sortOrder: 0, createdAt: new Date() },
   ]);
   jest.spyOn(useSettingsStore, 'getState').mockReturnValue(defaultSettings());
+  jest.spyOn(useSettingsStore.persist, 'hasHydrated').mockReturnValue(true);
+  jest.spyOn(useSettingsStore.persist, 'rehydrate').mockResolvedValue(undefined);
 });
 
 describe('checkGeofences', () => {
+  // --- Settings hydration ---
+  describe('settings hydration', () => {
+    it('calls rehydrate when store is not hydrated', async () => {
+      jest.spyOn(useSettingsStore.persist, 'hasHydrated').mockReturnValue(false);
+      mockGetActivePlaces.mockResolvedValue([]);
+
+      await checkGeofences(48.8566, 2.3522);
+
+      expect(useSettingsStore.persist.rehydrate).toHaveBeenCalled();
+    });
+
+    it('skips rehydrate when store is already hydrated', async () => {
+      jest.spyOn(useSettingsStore.persist, 'hasHydrated').mockReturnValue(true);
+      mockGetActivePlaces.mockResolvedValue([]);
+
+      await checkGeofences(48.8566, 2.3522);
+
+      expect(useSettingsStore.persist.rehydrate).not.toHaveBeenCalled();
+    });
+  });
+
   // --- Quiet mode ---
   describe('quiet mode', () => {
     it('skips everything when isQuietMode is true', async () => {
