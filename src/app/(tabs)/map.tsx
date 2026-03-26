@@ -98,8 +98,8 @@ export default function MapScreen() {
         mapViewRef.current?.animateToRegion({
           latitude: parseFloat(params.lat!),
           longitude: parseFloat(params.lng!),
-          latitudeDelta: 0.002,
-          longitudeDelta: 0.002,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
         });
       }, 300);
       return () => clearTimeout(timer);
@@ -144,6 +144,7 @@ export default function MapScreen() {
       <FAB
         testID="fab-add-place-map"
         icon="plus"
+        color={theme.colors.onPrimary}
         style={[styles.fab, { backgroundColor: theme.colors.primary }]}
         onPress={() => router.push('/place/add' as never)}
       />

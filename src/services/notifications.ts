@@ -58,7 +58,7 @@ export async function sendProximityNotification(
     content: {
       title: `À proximité : ${place.name}`,
       body: label ? `${label} — ${place.address}${distanceText}` : `${place.address}${distanceText}`,
-      data: { placeId: place.id },
+      data: { placeId: place.id, lat: place.latitude, lng: place.longitude },
     },
     trigger: { channelId: 'proximity-v2' },
   });
@@ -80,7 +80,11 @@ export async function sendGroupedNotification(places: Place[]): Promise<void> {
     content: {
       title: `${places.length} lieux à proximité`,
       body: names,
-      data: { placeIds: places.map((p) => p.id) },
+      data: {
+        placeIds: places.map((p) => p.id),
+        lat: places[0].latitude,
+        lng: places[0].longitude,
+      },
     },
     trigger: { channelId: 'proximity-v2' },
   });
