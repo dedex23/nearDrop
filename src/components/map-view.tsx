@@ -32,6 +32,7 @@ const MapViewComponent = React.forwardRef<MapViewHandle, Props>(function MapView
   ref,
 ) {
   const theme = useTheme();
+  const totalPlaces = useAppStore((s) => s.places.length);
   const categories = useAppStore((s) => s.categories);
   const mapRef = useRef<MapView>(null);
 
@@ -68,7 +69,7 @@ const MapViewComponent = React.forwardRef<MapViewHandle, Props>(function MapView
 
   return (
     <ClusteredMapView
-      key={places.map((p) => p.id).join(',')}
+      key={totalPlaces}
       ref={mapRef}
       provider={PROVIDER_GOOGLE}
       style={styles.map}

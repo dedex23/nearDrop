@@ -21,7 +21,7 @@ export const PlaceBottomSheet = forwardRef<BottomSheet, PlaceBottomSheetProps>(
     const categories = useAppStore((s) => s.categories);
     const removePlace = useAppStore((s) => s.removePlace);
     const userLocation = useAppStore((s) => s.userLocation);
-    const snapPoints = useMemo(() => ['30%', '60%'], []);
+    const snapPoints = useMemo(() => ['35%', '60%'], []);
 
     const category = useMemo(
       () => (place ? categories.find((c) => c.id === place.categoryId) : null),
@@ -73,17 +73,6 @@ export const PlaceBottomSheet = forwardRef<BottomSheet, PlaceBottomSheetProps>(
               à {formatDistance(distance)}
             </Text>
           )}
-          {place?.notes ? (
-            <>
-              <Divider style={styles.divider} />
-              <Text variant="labelLarge">Notes</Text>
-              <BottomSheetScrollView style={styles.notesScroll} nestedScrollEnabled>
-                <Text variant="bodyMedium" selectable>
-                  {place.notes}
-                </Text>
-              </BottomSheetScrollView>
-            </>
-          ) : null}
           {place && (
             <View style={styles.actions}>
               <Button
@@ -119,6 +108,15 @@ export const PlaceBottomSheet = forwardRef<BottomSheet, PlaceBottomSheetProps>(
               </Button>
             </View>
           )}
+          {place?.notes ? (
+            <>
+              <Divider style={styles.divider} />
+              <Text variant="labelLarge">Notes</Text>
+              <Text variant="bodyMedium" selectable>
+                {place.notes}
+              </Text>
+            </>
+          ) : null}
         </BottomSheetScrollView>
       </BottomSheet>
     );
@@ -129,7 +127,6 @@ const styles = StyleSheet.create({
   content: { padding: 16 },
   chip: { alignSelf: 'flex-start', marginTop: 8 },
   divider: { marginVertical: 12 },
-  notesScroll: { maxHeight: 120, marginTop: 8 },
   actions: { flexDirection: 'row', gap: 12, marginTop: 16 },
   actionButton: { flex: 1 },
 });
